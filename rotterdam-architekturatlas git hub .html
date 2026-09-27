@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A7C74">
+<title>Rotterdam Architekturatlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:ital,wght@0,400..700;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#F2F5F4; --surface:#FFFFFF; --surface2:#E8EEEC; --ink:#0F2129; --muted:#5E6E77; --line:#DDE5E3;
+  --accent:#0A7C74; --accent-soft:#D6EEEA; --coral:#F26B4B; --onimg:#FFFFFF;
+  --e1:#9A6232; --e2:#D2402F; --e3:#2D8A6E; --e4:#D08A16; --e5:#2E5BD6; --e6:#8350C8; --e7:#D33D7C;
+  --shadow:0 1px 2px rgba(15,33,41,.06),0 8px 24px rgba(15,33,41,.08);
+  --f-d:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --f-b:"Figtree","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --tab:64px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1518; --surface:#172126; --surface2:#1F2B31; --ink:#E8EEF0; --muted:#98A8B0; --line:#2A3940;
+  --accent:#3CC2B4; --accent-soft:#163A37; --coral:#FF8A6E;
+  --e1:#D39A68; --e2:#F27566; --e3:#5CC7A5; --e4:#F0B04A; --e5:#8BA6FF; --e6:#B993F0; --e7:#F07AAE;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1518; --surface:#172126; --surface2:#1F2B31; --ink:#E8EEF0; --muted:#98A8B0; --line:#2A3940;
+  --accent:#3CC2B4; --accent-soft:#163A37; --coral:#FF8A6E;
+  --e1:#D39A68; --e2:#F27566; --e3:#5CC7A5; --e4:#F0B04A; --e5:#8BA6FF; --e6:#B993F0; --e7:#F07AAE;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:16px;line-height:1.5}
+img{max-width:100%;display:block}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--f-d);margin:0;line-height:1.08;text-wrap:balance;letter-spacing:-.01em}
+
+/* App-Leiste */
+.appbar{position:sticky;top:0;z-index:500;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:calc(var(--safe-t) + 10px) 16px 10px;display:flex;align-items:center;gap:12px}
+.appbar .logo{width:34px;height:34px;border-radius:10px;background:var(--accent);display:grid;place-items:center;flex:none}
+.appbar .logo svg{width:20px;height:20px}
+.appbar .ttl{display:grid;line-height:1.15}
+.appbar .ttl b{font-family:var(--f-d);font-size:18px;font-weight:750}
+.appbar .ttl span{font-size:12.5px;color:var(--muted)}
+main{padding-bottom:calc(var(--tab) + var(--safe-b) + 24px)}
+.page{max-width:1100px;margin:0 auto;padding-inline:16px}
+
+/* Tab-Leiste */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:900;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + var(--safe-b));display:flex;justify-content:center}
+.tabbar .in{display:flex;width:100%;max-width:560px}
+.tabbar a{flex:1;display:grid;justify-items:center;gap:2px;padding:6px 0;text-decoration:none;color:var(--muted);font-size:11.5px;font-weight:600;border-radius:12px}
+.tabbar a svg{width:24px;height:24px}
+.tabbar a[aria-current="page"]{color:var(--accent)}
+.tabbar a[aria-current="page"] .pill{background:var(--accent-soft)}
+.tabbar .pill{padding:3px 16px;border-radius:99px;display:grid}
+
+/* gemeinsame Bausteine */
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:28px 0 12px}
+.sec-h h2{font-size:22px;font-weight:750}
+.sec-h a,.linkbtn{font-size:14px;font-weight:600;color:var(--accent);text-decoration:none;background:none;border:0;cursor:pointer;padding:0}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 16px 6px;margin-inline:-16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;text-decoration:none;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.ph{background:linear-gradient(135deg,var(--surface2),var(--line));position:relative;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
+.ph img.ok{opacity:1}
+.ph .ini{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-d);font-size:28px;font-weight:800;color:var(--muted);opacity:.5}
+.ph img.ok+.ini{display:none}
+.credit{position:absolute;right:8px;bottom:6px;font-size:10.5px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:6px;text-decoration:none;z-index:2}
+@media (prefers-reduced-motion:reduce){.ph img{transition:none}}
+
+/* Karussell und Karten */
+.hs{display:grid;grid-auto-flow:column;grid-auto-columns:min(72%,260px);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 16px 12px;margin-inline:-16px;scrollbar-width:none}
+.hs::-webkit-scrollbar{display:none}
+.hs>*{scroll-snap-align:start}
+.pc{background:var(--surface);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);display:grid;grid-template-rows:auto 1fr;cursor:pointer;border:0;padding:0;text-align:left}
+.pc .ph{aspect-ratio:4/3}
+.pc .bd{padding:10px 12px 12px;display:grid;gap:3px;align-content:start}
+.pc h3{font-size:16.5px;font-weight:700}
+.pc .m{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pc .yr{position:absolute;left:10px;top:10px;z-index:2;font-size:12px;font-weight:700;background:var(--surface);color:var(--ink);padding:3px 9px;border-radius:99px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+.grid .pc .ph{aspect-ratio:16/10}
+.grid .pc p{margin:4px 0 0;font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Entdecken */
+.hero{position:relative;border-radius:24px;overflow:hidden;margin-top:6px;box-shadow:var(--shadow);min-height:340px;display:grid;align-items:end}
+.hero .ph{position:absolute;inset:0}
+.hero .ov{position:relative;z-index:2;padding:24px 20px 20px;background:linear-gradient(to top,rgba(5,15,20,.85),rgba(5,15,20,.35) 60%,transparent);color:#fff;display:grid;gap:10px}
+.hero h1{font-size:clamp(34px,7vw,56px);font-weight:800}
+.hero p{margin:0;max-width:56ch;font-size:15.5px;opacity:.92}
+.hero .stats{display:flex;gap:8px;flex-wrap:wrap}
+.hero .stats span{background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 11px;border-radius:99px;font-size:13px;font-weight:600}
+.ecards{display:grid;grid-auto-flow:column;grid-auto-columns:min(78%,300px);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 16px 12px;margin-inline:-16px;scrollbar-width:none}
+.ecards::-webkit-scrollbar{display:none}
+.ecard{scroll-snap-align:start;position:relative;border-radius:18px;overflow:hidden;min-height:180px;display:grid;align-items:end;text-decoration:none;color:#fff;box-shadow:var(--shadow)}
+.ecard .ph{position:absolute;inset:0}
+.ecard .ov{position:relative;z-index:2;padding:14px;background:linear-gradient(to top,rgba(5,15,20,.85),transparent);display:grid;gap:2px}
+.ecard .n{font-family:var(--f-d);font-weight:800;font-size:13px;letter-spacing:.06em}
+.ecard h3{font-size:19px}
+.epoch{background:var(--surface);border-radius:22px;padding:20px 18px 18px;margin-top:18px;box-shadow:var(--shadow);scroll-margin-top:80px}
+.epoch .hd{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.epoch .num{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-family:var(--f-d);font-weight:800;color:#fff;flex:none}
+.epoch h2{font-size:24px;font-weight:750}
+.epoch .yr{font-size:13px;color:var(--muted);font-weight:600}
+.epoch p{margin:0 0 12px;max-width:68ch}
+.ideas{display:grid;gap:8px;margin:14px 0}
+.idea{background:var(--bg);border-radius:14px;padding:11px 13px}
+.idea b{display:block;font-family:var(--f-d);font-size:15.5px;margin-bottom:2px}
+.idea span{font-size:14.5px;color:var(--muted)}
+@media (min-width:760px){.ideas{grid-template-columns:repeat(2,1fr)}}
+.lit{background:var(--surface);border-radius:22px;padding:18px;margin-top:18px;box-shadow:var(--shadow)}
+.lit ul{padding-left:18px;margin:8px 0;font-size:14.5px}
+.lit li{margin-bottom:6px}
+
+/* Bauwerke */
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px;margin:8px 0 12px;box-shadow:var(--shadow)}
+.search svg{width:18px;height:18px;color:var(--muted);flex:none}
+.search input{flex:1;border:0;background:transparent;padding:13px 0;font:inherit;color:var(--ink);outline:none;min-width:0}
+.ghead{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.ghead h2{font-size:20px;font-weight:750}
+.ghead .yr{font-size:13px;color:var(--muted);font-weight:600}
+.empty{color:var(--muted);padding:30px 0;text-align:center}
+
+/* Karte */
+#p-karte{max-width:none;padding:0}
+.mapview{position:relative;height:calc(100dvh - 58px - var(--safe-t) - var(--tab) - var(--safe-b))}
+#bigmap{position:absolute;inset:0;background:var(--surface2)}
+.mapchips{position:absolute;z-index:450;top:10px;left:0;right:0;padding-inline:16px}
+.mapchips .chips{margin:0;padding:2px 0 6px}
+.mapchips .chip{box-shadow:var(--shadow)}
+.fabs{position:absolute;z-index:450;right:12px;top:64px;display:grid;gap:8px}
+.fab{width:44px;height:44px;border-radius:14px;background:var(--surface);border:0;box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.fab svg{width:22px;height:22px}
+.fab[aria-pressed="true"]{background:var(--accent);color:#fff}
+.preview{position:absolute;z-index:460;left:12px;right:12px;bottom:12px;max-width:520px;margin-inline:auto;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);display:grid;grid-template-columns:112px minmax(0,1fr);overflow:hidden;cursor:pointer}
+.preview .ph{min-height:120px}
+.preview .bd{padding:12px 14px;display:grid;gap:4px;align-content:start}
+.preview h3{font-size:17px}
+.preview .m{font-size:13px;color:var(--muted)}
+.preview .acts{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.preview .x{position:absolute;right:8px;top:8px;width:28px;height:28px;border-radius:99px;border:0;background:var(--surface2);cursor:pointer;display:grid;place-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;border:0;background:var(--accent);color:#fff;font-weight:650;font-size:14px;text-decoration:none;cursor:pointer}
+.btn.sec{background:var(--surface2);color:var(--ink)}
+.btn svg{width:16px;height:16px}
+.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center}
+.pin i{width:8px;height:8px;border-radius:50%;background:#fff;transform:rotate(45deg)}
+.pin.sel{width:40px;height:40px;border-width:4px}
+.me{width:18px;height:18px;border-radius:50%;background:#2E7CF6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(46,124,246,.25)}
+.leaflet-container{font-family:var(--f-b)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .osm{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}}
+:root[data-theme="dark"] .osm{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+.maperr{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+
+/* Architekten */
+.alist{display:grid;gap:10px}
+.arow{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);cursor:pointer;border:0;text-align:left;width:100%}
+.av{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-family:var(--f-d);font-weight:800;font-size:18px;color:#fff}
+.arow b{font-family:var(--f-d);font-size:16.5px;display:block}
+.arow span{font-size:13px;color:var(--muted)}
+.arow .cnt{font-size:12px;font-weight:700;background:var(--surface2);color:var(--ink);padding:3px 9px;border-radius:99px}
+@media (min-width:760px){.alist{grid-template-columns:repeat(2,1fr)}}
+
+/* Detail-Blatt */
+.sheet{position:fixed;inset:0;z-index:1000;background:rgba(5,12,15,.45);display:flex;justify-content:center;align-items:flex-end}
+.sheet .panel{background:var(--bg);width:100%;max-width:760px;height:100%;overflow-y:auto;overscroll-behavior:contain;position:relative}
+@media (min-width:800px){.sheet{align-items:center;padding:24px}.sheet .panel{height:auto;max-height:100%;border-radius:24px}}
+.sheet .top{position:relative}
+.sheet .top .ph{aspect-ratio:4/3;max-height:58vh;width:100%}
+.sheet .top .grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35),transparent 30%);pointer-events:none;z-index:1}
+.sheet .close{position:absolute;left:14px;top:calc(var(--safe-t) + 12px);z-index:3;width:40px;height:40px;border-radius:99px;border:0;background:rgba(255,255,255,.92);color:#0F2129;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow)}
+.sheet .close svg{width:20px;height:20px}
+.sheet .body{background:var(--bg);border-radius:24px 24px 0 0;margin-top:-22px;position:relative;z-index:2;padding:20px 18px calc(28px + var(--safe-b));display:grid;gap:14px}
+.sheet h1{font-size:clamp(26px,5vw,36px);font-weight:800}
+.sheet .sub{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;color:#fff}
+.badge.o{background:var(--surface2);color:var(--ink)}
+.sheet p{margin:0;max-width:68ch}
+.why{background:var(--accent-soft);border-radius:16px;padding:12px 14px}
+.why b{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.facts{display:grid;gap:0;background:var(--surface);border-radius:16px;overflow:hidden}
+.facts div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14.5px}
+.facts div:last-child{border-bottom:0}
+.facts dt{color:var(--muted);margin:0}
+.facts dd{margin:0}
+.minimap{height:200px;border-radius:16px;overflow:hidden;background:var(--surface2)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.arch-links{display:grid;gap:8px}
+.arch-links .arow{box-shadow:none;border:1px solid var(--line)}
+.bio-hd{padding:calc(var(--safe-t) + 70px) 18px 20px;display:grid;gap:10px;justify-items:start}
+.bio-hd .av{width:72px;height:72px;font-size:26px;border-radius:22px}
+.note{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l4-3v15M9 21V4h6v17M15 21V11h4v10"/></svg></div>
+  <div class="ttl"><b>Rotterdam Architekturatlas</b><span id="subttl">Entdecken</span></div>
+</header>
+
+<main>
+  <section id="p-entdecken" class="page"></section>
+  <section id="p-bauwerke" class="page" hidden></section>
+  <section id="p-karte" class="page" hidden></section>
+  <section id="p-architekten" class="page" hidden></section>
+</main>
+
+<nav class="tabbar" aria-label="Hauptnavigation"><div class="in">
+  <a href="#entdecken" data-p="entdecken"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span>Entdecken</a>
+  <a href="#bauwerke" data-p="bauwerke"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l6-4v17M10 21V10h10v11M3 21h18M14 14h2M14 17h2"/></svg></span>Bauwerke</a>
+  <a href="#karte" data-p="karte"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span>Karte</a>
+  <a href="#architekten" data-p="architekten"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>Architekten</a>
+</div></nav>
+
+<div id="sheet" class="sheet" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ---------- EPOCHEN ---------- */
+const EPOCHS=[
+{id:"e1",n:"I",yr:"bis 1914",t:"Handelsstadt und Welthafen",c:"--e1",
+ p:["Rotterdam entstand im 13. Jahrhundert als Damm-Siedlung an der Rotte. Bis ins 19. Jahrhundert war es eine dichte Kaufmannsstadt mit Grachten, der gotischen Laurenskerk und Patrizierhäusern wie dem Schielandshuis. Den Maßstab veränderte erst der Nieuwe Waterweg (1872), der die Stadt direkt mit der Nordsee verband.",
+ "Um 1900 wird Rotterdam zum Welthafen. Auf dem Südufer entstehen Hafenbecken, Lagerhäuser und Silos, am Nordufer Kontorhäuser. Architektonisch ist die Zeit eklektisch, aber technisch kühn. Das Witte Huis (1898) erprobt den Hochhausbau, die Maassilo (1910) den Stahlbeton im Industriebau. Die Hafenbauten liefern den Maßstab, der das Rotterdamer Selbstverständnis bis heute prägt: groß, pragmatisch, der Zukunft zugewandt."],
+ ideas:[["Historismus und Eklektizismus","Stilformen der Vergangenheit werden frei kombiniert, oft über moderner Konstruktion (Stahl, Beton)."],["Hafen als Stadtmaschine","Silos, Lagerhäuser und Kais sind reine Zweckbauten. Später werden sie zum Vorbild der Moderne und heute zum Umbau-Erbe."]]},
+{id:"e2",n:"II",yr:"1914–1940",t:"Tradition, De Stijl und Nieuwe Bouwen",c:"--e2",
+ p:["Das rasche Wachstum erzeugt Wohnungsnot. Das Woningwet (Wohnungsgesetz) von 1901 ermöglicht sozialen Wohnungsbau, und die Stadt wird zum Experimentierfeld. Parallel laufen zwei Linien. Die traditionelle, handwerkliche Architektur zeigt sich im Stadhuis, im Hauptpostamt und in den Gartenstädten Vreewijk und Heijplaat. Die Avantgarde bringt J.J.P. Oud, der als Stadtarchitekt (1918–1933) Arbeitersiedlungen baut und als Mitbegründer von De Stijl die Farb- und Raumideen der Gruppe in den Wohnungsbau trägt.",
+ "In Spangen erfindet Michiel Brinkman mit dem Justus-van-Effen-Block die Laubengang-Straße in der Luft. Ab Mitte der 1920er-Jahre wird Rotterdam zum Zentrum des Nieuwe Bouwen, der niederländischen Form des Funktionalismus. Die Van-Nelle-Fabrik, das Haus Sonneveld und die Bergpolderflat zeigen Licht, Luft, Stahl und Glas als soziales Programm. Die Architektengruppe Opbouw (gegründet 1920) bildet mit der Amsterdamer De 8 die niederländische CIAM-Sektion. Neue Techniken wie Stahlskelett und Hochhausbau werden in Rotterdam zuerst im Wohnungsbau erprobt."],
+ ideas:[["De Stijl","Gegründet 1917 (Van Doesburg, Mondrian, Oud u. a.): Primärfarben, Rechteck, Auflösung der Wand in Flächen. Oud verlässt die Gruppe 1921 nach dem Streit um die Farben in Spangen."],["Nieuwe Bouwen und Nieuwe Zakelijkheid","Funktion, Hygiene, Serienbau, Stahl und Glas. Architektur als Werkzeug der sozialen Reform."],["Gartenstadt und Delftse School","Niedrige Bebauung, Grün, handwerkliche Ziegelarchitektur (Granpré Molière). Die Gegenposition zur Avantgarde."],["Amsterdamse School","Expressive Ziegelarchitektur. In Rotterdam kaum vertreten, am ehesten mit J.F. Staals Beurs, die bereits sachlicher ist."],["Laubengang und Hochhauswohnen","Von Brinkmans „Straße in der Luft“ (1922) bis zur Stahlskelett-Flat Bergpolder (1934)."]]},
+{id:"e3",n:"III",yr:"1940–1970",t:"Zerstörung und Wiederaufbau",c:"--e3",
+ p:["Am 14. Mai 1940 zerstört die deutsche Luftwaffe die Innenstadt. Rund 25.000 Wohnungen und fast die gesamte historische City gehen verloren, der anschließende Brand vernichtet den Rest. Stadtbaumeister W.G. Witteveen plant zunächst einen eher traditionellen Wiederaufbau. Sein Nachfolger Cornelis van Traa legt 1946 den Basisplan vor, der mit der Vergangenheit bricht: breite Verkehrsachsen, eine Trennung der Funktionen und eine offene, moderne City.",
+ "Rotterdam wird zum Schaufenster der Nachkriegsmoderne. Die Lijnbaan (Van den Broek & Bakema) ist eine der ersten geplanten Fußgängerzonen Europas, mit Wohnscheiben dahinter. Maaskant baut Großstrukturen wie das Groothandelsgebouw, eine „Stadt im Gebäude“. Lotte Stam-Beese plant mit Pendrecht nach der Wijkgedachte (Nachbarschaftsidee) Wohnquartiere aus wiederholten „Stempeln“. Bakema trägt die Rotterdamer Erfahrungen in die Kritik von Team 10 am starren CIAM-Funktionalismus."],
+ ideas:[["Basisplan (1946)","Van Traas Masterplan: Abkehr vom alten Stadtgrundriss, großzügige Achsen (Coolsingel, Weena), Zonierung."],["Wijkgedachte","Nachbarschaftsidee: Stadt aus überschaubaren, sozial gemischten Einheiten mit eigenen Einrichtungen."],["Stempel","Ein wiederholbares Städtebau-Modul aus gemischten Wohntypen um einen Hof, eingesetzt in Pendrecht."],["Team 10","Bakema, Van Eyck, die Smithsons u. a. stellen „Identität“ und „Assoziation“ gegen die Funktionstrennung der CIAM."]]},
+{id:"e4",n:"IV",yr:"1970–1988",t:"Stadterneuerung, Strukturalismus, Postmoderne",c:"--e4",
+ p:["Die Kritik an der zugigen, leeren Wiederaufbau-City wächst. Die Stadt setzt auf Stadtvernieuwing (Stadterneuerung) nach dem Motto „bouwen voor de buurt“, also Bauen für die Nachbarschaft: Die Altbauviertel werden mit den Bewohnern erneuert statt abgerissen. Das Wohnen soll in die City zurück.",
+ "Piet Bloms Kubuswoningen machen den Strukturalismus sichtbar: Wohnen als Wald, als Dorf in der Stadt. Carel Weeber setzt mit der Peperklip auf strenge Großform und den Neorationalismus. Die Rekonstruktion von Ouds Café De Unie (1986) zeigt, dass Rotterdam seine Moderne als Erbe entdeckt. Junge Büros wie Mecanoo starten mit Wohnungsbau-Wettbewerben. Am Maasufer entsteht mit der Willemswerf von Wim Quist ein neues, repräsentatives Stadtbild zum Fluss."],
+ ideas:[["Strukturalismus","Aus der Team-10-Tradition (Van Eyck, Hertzberger, Blom): Bauten aus wiederholten Grundeinheiten, die Aneignung zulassen."],["Bouwen voor de buurt","Stadterneuerung mit und für die Bewohner, kleinteilig und bestandsorientiert."],["Neorationalismus und Postmoderne","Rückkehr zu Großform, Typus und Stadtblock. Weebers „Rotterdamer Realismus“."]]},
+{id:"e5",n:"V",yr:"1988–2010",t:"Superdutch und die Stadt am Fluss",c:"--e5",
+ p:["Ab den späten 1980er-Jahren wird Rotterdam zur Architekturhauptstadt der Niederlande. Das Nederlands Architectuurinstituut zieht 1993 in einen Neubau am Museumpark, und OMA (Rem Koolhaas) arbeitet von hier aus weltweit. Die Kunsthal (1992) wird zum Manifest einer Architektur aus Bewegung, Rampe und Schnitt. Aus diesem Umfeld gehen MVRDV, West 8, UNStudio und Neutelings Riedijk hervor. International wird der konzeptgetriebene, diagrammatische Stil als „Superdutch“ bekannt.",
+ "Städtebaulich springt die Stadt über die Maas. Der Masterplan Kop van Zuid (Teun Koolhaas, ab 1987) verwandelt alte Hafenflächen in ein neues Zentrum, und die Erasmusbrug (1996) ist Brücke und Symbol zugleich. Auf der Wilhelminapier bauen internationale Architekten wie Piano, Foster, Siza und Bolles+Wilson das „Manhattan an der Maas“."],
+ ideas:[["Superdutch","Sammelbegriff (Bart Lootsma, 2000) für die konzeptionelle, oft diagrammatische niederländische Architektur der 1990er."],["Programm als Entwurf","Nutzungen werden gestapelt, gefaltet, verschränkt. Die Organisation ersetzt die Stilfrage."],["Stad aan de Maas","Leitbild der 1980er/90er: Die Stadt wendet sich dem Fluss zu, Hafenbrachen werden Stadt."]]},
+{id:"e6",n:"VI",yr:"2010–heute",t:"Hybride, vertikale, klimafeste Stadt",c:"--e6",
+ p:["Die jüngste Phase verdichtet und verschränkt: De Rotterdam als vertikale Stadt, die Markthal als Hybrid aus Markt und Wohnen, das Timmerhuis als Umbau und Aufstockung. Das neue Centraal Station (2014) macht den Bahnhof zum Stadtraum.",
+ "Neue Themen sind Aneignung, Umbau und Klimaanpassung. Die per Crowdfunding finanzierte Luchtsingel (ZUS) zeigt Stadtentwicklung von unten. Das Depot Boijmans (MVRDV, 2021) macht das Museumsdepot öffentlich, das Fenix-Lagerhaus wird mit der „Tornado“-Treppe (MAD, 2025) zum Migrationsmuseum. Dächer, Wasserplätze und Hafenbauten werden zu den neuen Ressourcen der Stadt."],
+ ideas:[["Hybrid","Mehrere Programme in einer Struktur (Markthal, De Rotterdam) als Antwort auf die Funktionstrennung der Nachkriegszeit."],["Tijdelijkheid und Aneignung","Temporäre und von unten initiierte Projekte als Planungsinstrument (Luchtsingel)."],["Umbau statt Neubau","Hafenerbe und Nachkriegsbauten werden transformiert (Fenix, Timmerhuis, Maassilo)."]]}
+];
+
+/* ---------- ARCHITEKTEN ---------- */
+const A={
+molenbroek:{n:"Willem Molenbroek",l:"Rotterdamer Architekt, tätig um 1900",r:"Hochhauspionier",bio:"Molenbroek entwarf für die Brüder Van der Schuijt das Witte Huis (1897–98) am Wijnhaven. Mit rund 43 Metern gehört es zu den frühesten Hochhausbauten Europas und war lange das höchste Bürogebäude des Kontinents. Die Architektur ist noch Jugendstil und Historismus, die Idee des vertikalen Bürohauses aber amerikanisch. Das Haus überstand das Bombardement von 1940 und ist heute Rijksmonument."},
+stok:{n:"J.P. Stok Wzn.",l:"Ingenieur-Architekt, tätig um 1900–1930",r:"Industriebau in Stahlbeton",bio:"Jacobus Pieter Stok baute für die Graan Elevator Maatschappij die erste Maassilo (1910) an der Maashaven, einen der frühen großen Stahlbetonbauten der Niederlande. Solche Silos und Speicher zählten Le Corbusier und Gropius zu den Vorbildern einer neuen, ornamentfreien Architektur. Die Silo ist heute ein Ort für Kultur und Veranstaltungen."},
+muller:{n:"J. Muller, Droogleever Fortuyn & C.B. van der Tak",l:"Rotterdamer Büro, um 1900–1920",r:"Kontorhausbau",bio:"Das Büro baute 1901 und 1917 das Hauptquartier der Holland-Amerika Lijn auf der Wilhelminapier. Von hier fuhren Hunderttausende Auswanderer nach New York. Die zwei Türme mit Kupferhauben und Uhren machten das Gebäude zum Wahrzeichen des Hafens. Seit 1993 ist es das Hotel New York."},
+evers:{n:"Henri Evers",l:"1855–1929",r:"Traditionalismus, Professor in Delft",bio:"Evers lehrte an der TH Delft und prägte eine Generation traditionell ausgebildeter Architekten. Sein Stadhuis an der Coolsingel (1914–1920) mischt Renaissance-, Romanik- und Art-déco-Motive. Es ist ein repräsentativer Monumentalbau, gegen den die Moderne später polemisierte. Er überstand den Krieg und ist bis heute Sitz der Stadtregierung."},
+bremer:{n:"G.C. Bremer",l:"1880–1949",r:"Rijksbouwmeester",bio:"Als Architekt des Reichs baute Bremer das Hoofdpostkantoor an der Coolsingel (1915–1923). Die Stahlbetonhalle hinter einer schweren Natursteinfassade zeigt die typische Doppelgesichtigkeit der Zeit: moderne Konstruktion, traditionelles Kleid. Das Gebäude überstand 1940 und wird heute zu einem Hotel- und Wohnkomplex umgebaut."},
+berlage:{n:"H.P. Berlage",l:"1856–1934",r:"Vater der niederländischen Moderne",bio:"Berlage (Beurs Amsterdam, 1903) steht für Materialwahrheit und die Rolle der Architektur in der Gemeinschaft. Er gilt als Wegbereiter der Amsterdamse School wie des Nieuwe Bouwen. Für Rotterdam lieferte er 1913 den ersten Städtebauentwurf für die Gartenstadt Vreewijk, den Granpré Molière, Verhagen und Kok weiterentwickelten."},
+granpre:{n:"M.J. Granpré Molière",l:"1883–1972",r:"Delftse School",bio:"Granpré Molière war Professor in Delft und Leitfigur der Delftse School: eine katholisch geprägte, traditionelle Ziegelarchitektur mit Satteldach als bewusste Gegenposition zum Nieuwe Bouwen. Mit Verhagen und Kok baute er die Gartenstadt Vreewijk (ab 1916). Nach 1945 bestimmte seine Schule einen großen Teil des ländlichen Wiederaufbaus."},
+baanders:{n:"H.A.J. & J. Baanders",l:"Amsterdamer Architektenbrüder",r:"Werkswohnungsbau",bio:"Die Brüder Baanders planten für die Rotterdamsche Droogdok Maatschappij (RDM) das Tuindorp Heijplaat (1914–1918). Es war ein Werksdorf mitten im Hafen, isoliert vom Rest der Stadt, mit eigenen Schulen, Läden und Vereinshaus. Heijplaat zeigt die Gartenstadt-Idee als unternehmerisches Sozialprojekt."},
+oud:{n:"J.J.P. Oud",l:"1890–1963",r:"De Stijl, Nieuwe Bouwen, Stadtarchitekt",bio:"Oud war 1917 Mitbegründer von De Stijl und von 1918 bis 1933 Architekt des Gemeentelijke Woningdienst in Rotterdam. In Spangen, Tusschendijken, Oud-Mathenesse (Witte Dorp) und der Kiefhoek entwickelte er standardisierte Arbeiterwohnungen, die international als Musterbeispiele des sozialen Funktionalismus galten. Sein Café De Unie (1925) übersetzte die De-Stijl-Malerei in eine Fassade. 1927 baute er Reihenhäuser für die Weißenhofsiedlung Stuttgart, und 1932 zeigte ihn das MoMA in der Ausstellung „Modern Architecture“. Später wandte er sich einer monumentaleren Architektur zu."},
+vandoesburg:{n:"Theo van Doesburg",l:"1883–1931",r:"De-Stijl-Theoretiker",bio:"Maler, Theoretiker und Herausgeber der Zeitschrift De Stijl. Van Doesburg entwarf 1921 die Farbgebung für Ouds Wohnblöcke in Spangen. Der Streit darüber, ob Farbe die Architektur unterstützen oder autonom auflösen soll, führte zum Bruch zwischen beiden. Sein Einfluss reichte über seine Kurse in Weimar bis ans Bauhaus."},
+mbrinkman:{n:"Michiel Brinkman",l:"1873–1925",r:"Laubengang-Wohnen",bio:"Brinkman baute 1919–1922 in Spangen den Justus-van-Effen-Block, einen riesigen Hofblock mit einer umlaufenden Galerie im zweiten Obergeschoss. Die Galerie ist breit genug für Lieferkarren und Nachbarschaftsleben. Alison und Peter Smithson beriefen sich darauf für ihre Idee der „streets in the air“. Sein Sohn J.A. Brinkman führte das Büro mit Van der Vlugt weiter."},
+bvdv:{n:"Brinkman & Van der Vlugt",l:"J.A. Brinkman (1902–1949), L.C. van der Vlugt (1894–1936)",r:"Nieuwe Bouwen",bio:"Das wichtigste Büro des Rotterdamer Funktionalismus. Johannes Brinkman und Leendert van der Vlugt bauten die Van-Nelle-Fabrik (1925–1931, UNESCO-Welterbe seit 2014), das Haus Sonneveld (1929–1933), das Stadion De Kuip und zusammen mit Van Tijen die Bergpolderflat. Typisch sind Stahl- und Betonskelette, Vorhangfassaden, Licht und technische Präzision. Nach Van der Vlugts Tod 1936 übernahm Jo van den Broek dessen Rolle; daraus entstand später das Büro Van den Broek & Bakema."},
+stam:{n:"Mart Stam",l:"1899–1986",r:"Nieuwe Bouwen, Freischwinger",bio:"Stam arbeitete 1926–1928 im Büro Brinkman & Van der Vlugt am Entwurf der Van-Nelle-Fabrik mit; sein Anteil ist in der Forschung viel diskutiert. Er baute in der Weißenhofsiedlung, gilt als Erfinder des hinterbeinlosen Stahlrohrstuhls, lehrte am Bauhaus und plante mit Ernst May in der Sowjetunion. Er war mit Lotte Beese verheiratet."},
+dudok:{n:"W.M. Dudok",l:"1884–1974",r:"Moderne Kubik",bio:"Dudok, Stadtarchitekt von Hilversum (Rathaus 1931), verband die Kubik von De Stijl und Frank Lloyd Wright mit der Ziegeltradition. In Rotterdam baute er das Warenhaus De Bijenkorf (1929–1930) mit einer großen Glashalle. Nach Kriegsschäden wurde es 1960 abgerissen, was bis heute als großer Verlust des Rotterdamer Erbes gilt."},
+vantijen:{n:"Willem van Tijen",l:"1894–1974",r:"Wohnungsbau, Hochhauswohnen",bio:"Van Tijen machte das Wohnhochhaus für Arbeiter möglich. Die Bergpolderflat (1932–1934, mit Brinkman & Van der Vlugt) ist das erste Galerie-Wohnhochhaus der Niederlande in Stahlskelett-Bauweise, die Plaslaanflat (1937–1938, mit Maaskant) seine bürgerliche Variante. Nach dem Krieg baute er mit Maaskant das Groothandelsgebouw und prägte den Wiederaufbau-Wohnungsbau wesentlich."},
+maaskant:{n:"Hugh Maaskant",l:"1907–1977",r:"Wiederaufbau, Großstrukturen",bio:"Maaskant ist der Architekt des Rotterdamer Wiederaufbaus. Mit Van Tijen baute er das Groothandelsgebouw (1949–1953) und das Industriegebouw (1948–1952), beides Großbauten, die eine ganze Stadt in sich aufnehmen. Allein folgten Euromast (1960), Hilton (1964) und viele Firmenbauten. Er stand für Optimismus, Technik und Maßstab statt Theorie; seine Bauten wurden erst spät als Erbe anerkannt."},
+staal:{n:"J.F. Staal",l:"1879–1940",r:"Amsterdamse School, später sachlich",bio:"Staal gehörte zum Umfeld der Amsterdamse School. Sein letztes großes Werk ist die Rotterdamer Beurs (1936–1940), heute Teil des World Trade Center. Der kühle, sachliche Klinker- und Natursteinbau mit Uhrturm zeigt den Übergang von der expressiven Schule zu einer gemäßigten Moderne. Er überstand das Bombardement nur knapp."},
+ravesteyn:{n:"Sybold van Ravesteyn",l:"1889–1983",r:"Vom Funktionalismus zum „Neobarock“",bio:"Van Ravesteyn begann als Funktionalist und Ingenieur-Architekt bei der Eisenbahn, wandte sich dann aber provokant einer barock-geschwungenen Moderne zu. In Rotterdam baute er die Tierpark-Anlagen von Blijdorp (1937–1941, u. a. Rivièrahal) und das Centraal Station (1957, 2007 abgerissen). Er gilt als eigenwilliger Außenseiter der niederländischen Moderne."},
+vandenbroek:{n:"J.H. van den Broek",l:"1898–1978",r:"Nieuwe Bouwen, Wiederaufbau",bio:"Jo van den Broek baute zunächst eigene funktionalistische Wohnbauten und übernahm 1937 den Platz des verstorbenen Van der Vlugt bei Brinkman. Ab 1948 bildete er mit Jaap Bakema das einflussreichste Büro des Wiederaufbaus. Ihr gemeinsames Werk ist die Lijnbaan (1953). Als Professor in Delft prägte er Generationen von Architekten."},
+bakema:{n:"Jaap Bakema",l:"1914–1981",r:"Team 10, Wiederaufbau",bio:"Bakema war Mitglied von Opbouw, Sekretär der späten CIAM und eine zentrale Figur von Team 10. Er suchte eine Architektur, die das „offene Gesellschaftsleben“ räumlich ausdrückt. Mit Van den Broek baute er die Lijnbaan (1953), Stadtteile und große Wohnbauten und publizierte die Team-10-Ideen im Forum-Magazin. Sein Archiv liegt im Nieuwe Instituut."},
+vantraa:{n:"Cornelis van Traa",l:"1899–1970",r:"Stadtplaner, Basisplan",bio:"Van Traa leitete ab 1944 den Wiederaufbau und legte 1946 den Basisplan vor. Er war ein moderner Masterplan mit breiten Verkehrsachsen, klarer Zonierung und einer offenen City, der den alten Stadtgrundriss weitgehend aufgab. Damit schuf er das Fundament, auf dem Lijnbaan, Weena und die heutige Hochhaus-City entstanden."},
+stambeese:{n:"Lotte Stam-Beese",l:"1903–1988",r:"Städtebau, Bauhaus, Wijkgedachte",bio:"Lotte Beese studierte am Bauhaus, arbeitete in der Sowjetunion und kam über Amsterdam nach Rotterdam. Von 1946 bis 1968 war sie Stadtplanerin bei der Gemeinde, lange als einzige Frau. Sie entwarf die Stadterweiterung Pendrecht mit wiederholten „Stempeln“ aus gemischten Wohntypen. Pendrecht wurde auf der CIAM-Konferenz in Aix-en-Provence (1953) international diskutiert."},
+breuer:{n:"Marcel Breuer",l:"1902–1981",r:"Bauhaus, internationale Moderne",bio:"Breuer, Bauhaus-Absolvent und Möbelentwerfer (Wassily-Stuhl), emigrierte über London in die USA. Für De Bijenkorf baute er in Rotterdam 1955–1957 ein fensterloses Warenhaus mit wabenartiger Natursteinfassade, zusammen mit A. Elzas. Davor steht Naum Gabos 26 Meter hohe Stahlskulptur. Der Bau ist eines der wichtigsten Werke der Nachkriegsmoderne in den Niederlanden."},
+blom:{n:"Piet Blom",l:"1934–1999",r:"Strukturalismus",bio:"Blom war Schüler von Aldo van Eyck und dachte Wohnen als „urbanes Dach“ und als Wald. Seine Kubuswoningen (Helmond 1977, Rotterdam 1978–1984) sind auf die Spitze gestellte Würfel auf Pfeilern über einer Fußgängerbrücke; dazu gehört das Wohnhochhaus „Het Potlood“. Blom ist die Schlüsselfigur, um den niederländischen Strukturalismus in Rotterdam zu verstehen."},
+weeber:{n:"Carel Weeber",l:"geb. 1937",r:"Neorationalismus, „Rotterdamer Realismus“",bio:"Weeber stellte sich provokant gegen die kleinteilige Stadterneuerung und forderte große Form und Freiheit im Wohnungsbau. Seine Peperklip (1979–1982) ist ein über 500 Meter langer, büroklammerförmiger Wohnblock. Er rekonstruierte Ouds Café De Unie (1986) an neuem Ort. Als Vorsitzender des BNA prägte er die Architekturpolitik der 1980er."},
+mecanoo:{n:"Mecanoo (Francine Houben u. a.)",l:"gegr. 1984 in Delft",r:"Wohnungsbau, Landschaftlichkeit",bio:"Mecanoo entstand aus dem gewonnenen Wettbewerb für Wohnungen am Kruisplein (1985), gegründet von Francine Houben, Henk Döll, Erick van Egeraat u. a. Das Büro verbindet die Tradition des Nieuwe Bouwen mit Collage, Material und Landschaft. In Rotterdam baute es u. a. den Montevideo-Turm (2005)."},
+quist:{n:"Wim Quist",l:"geb. 1930",r:"Rationaler Monumentalismus",bio:"Quist war Reichsbaumeister und baute in Rotterdam das Maritiem Museum (1986) und die Willemswerf (1983–1989), das weiße, schräg angeschnittene Bürohochhaus an den Boompjes. Seine Architektur steht für geometrische Strenge und Präzision. Mit der Willemswerf beginnt die neue Hochhaus-Silhouette am Fluss."},
+oma:{n:"Rem Koolhaas / OMA",l:"geb. 1944; OMA gegr. 1975",r:"Delirious New York, Programm und Bigness",bio:"Koolhaas, ehemaliger Journalist, erforschte in „Delirious New York“ (1978) die Kultur der Verdichtung und gründete OMA, das seit 1978 in Rotterdam sitzt. Die Kunsthal (1992), der Museumpark, das Timmerhuis (2015) und De Rotterdam (2013) zeigen die Leitideen: Programm statt Form, Rampe und Schnitt, „Bigness“ als vertikale Stadt. OMA bildete die Generation der Superdutch-Büros aus (MVRDV, Neutelings, u. a.). Pritzker-Preis 2000."},
+coenen:{n:"Jo Coenen",l:"geb. 1949",r:"Rationalismus, Stadtbaukunst",bio:"Coenen gewann 1988 den Wettbewerb für das Nederlands Architectuurinstituut (heute Het Nieuwe Instituut, 1993). Das Ensemble aus Archiv-Riegel über Pfeilern, Glas-Ausstellungshalle und Pergola bildet mehrere Architekturauffassungen bewusst nebeneinander ab. Später war er Rijksbouwmeester."},
+west8:{n:"West 8 (Adriaan Geuze)",l:"gegr. 1987",r:"Landschaftsarchitektur und Stadtraum",bio:"West 8 machte Rotterdam zum Labor der Landschaftsarchitektur. Der Schouwburgplein (1991–1996) ist eine erhöhte, leere Bühne mit hydraulischen Lichtmasten, die an Hafenkräne erinnern. Das Büro war Teil von Team CS für den neuen Hauptbahnhof (2014)."},
+unstudio:{n:"UNStudio (Ben van Berkel)",l:"Van Berkel geb. 1957",r:"Brückenbau, Infrastruktur als Architektur",bio:"Ben van Berkel entwarf die Erasmusbrug (1990–1996), die „Schwan“ genannte Schrägseilbrücke mit geknicktem Pylon. Sie verbindet Kop van Zuid mit dem Zentrum. Mit Caroline Bos gründete er 1998 UNStudio, dessen Werk um Diagramm, Fluss und Infrastruktur als Architektur kreist."},
+bolleswilson:{n:"Bolles+Wilson",l:"Julia Bolles-Wilson & Peter Wilson, Münster",r:"Expressiver Kontextualismus",bio:"Das deutsch-australische Büro baute das Nieuwe Luxor Theater (1996–2001) an der Kop van Zuid. Der rote, skulpturale Körper mit Anlieferungsrampe um das Gebäude reagiert auf Wasser, Brücke und Verkehr. Es ist ein Beispiel für die internationale Öffnung Rotterdams in den 1990ern."},
+piano:{n:"Renzo Piano",l:"geb. 1937",r:"High-Tech, Tektonik",bio:"Piano (Centre Pompidou mit Rogers) baute auf der Wilhelminapier den KPN-Turm (1997–2000). Die geneigte Fassade ist mit Tausenden Leuchten als Medienfassade bespielbar und wird von einer schrägen Stütze gehalten. Pritzker-Preis 1998."},
+foster:{n:"Norman Foster",l:"geb. 1935",r:"High-Tech",bio:"Foster + Partners bauten das World Port Center (1997–2001) an der Spitze der Wilhelminapier, einen Büroturm mit gekrümmtem Grundriss für den Hafenbetrieb. Pritzker-Preis 1999."},
+siza:{n:"Álvaro Siza",l:"geb. 1933",r:"Kritischer Regionalismus",bio:"Der portugiesische Architekt (Pritzker 1992) baute auf der Wilhelminapier den Wohnturm New Orleans (2006–2010), mit rund 158 Metern damals das höchste Wohnhaus der Niederlande. Die ruhige Steinfassade setzt einen bewusst zurückhaltenden Akzent zwischen expressiven Nachbarn."},
+teamcs:{n:"Team CS (Benthem Crouwel, MVSA, West 8)",l:"Arbeitsgemeinschaft, 2004–2014",r:"Infrastruktur als Stadtraum",bio:"Benthem Crouwel, Meyer en Van Schooten und West 8 entwarfen gemeinsam das neue Centraal Station (2014). Die spitz auf die City weisende Halle mit Holzdecke und großem Solardach über den Gleisen ersetzt Van Ravesteyns Bau von 1957, dessen Leuchtschrift „Centraal Station“ übernommen wurde."},
+mvrdv:{n:"MVRDV (Winy Maas, Jacob van Rijs, Nathalie de Vries)",l:"gegr. 1993",r:"Superdutch, Datascapes, Hybride",bio:"Die drei gründeten MVRDV nach Jahren bei OMA und Mecanoo in Rotterdam. Bekannt wurden sie mit radikal diagrammatischen Projekten (WoZoCo Amsterdam, Expo-Pavillon Hannover 2000). In Rotterdam stehen die Markthal (2014), Didden Village (2006) und das Depot Boijmans Van Beuningen (2021). Ihre Themen sind Verdichtung, Stapelung und Öffentlichkeit."},
+zus:{n:"ZUS (Elma van Boxel & Kristian Koreman)",l:"gegr. 2001",r:"Urbanismus von unten",bio:"ZUS (Zones Urbaines Sensibles) besetzten das leerstehende Schieblock und bauten die gelbe Holzbrücke Luchtsingel (2012–2015), finanziert per Crowdfunding (Käufer von Brettern wurden mit Namen verewigt). Das Projekt wurde zum Symbol einer temporären, bürgerschaftlichen Stadtentwicklung und Teil der Internationalen Architekturbiennale Rotterdam 2012."},
+mad:{n:"MAD Architects (Ma Yansong)",l:"Ma Yansong geb. 1975",r:"Organische, „Shanshui“-Architektur",bio:"Das Pekinger Büro baute mit der „Tornado“ (2025) eine doppelte Wendeltreppe aus Holz und poliertem Stahl in das historische Fenix-Lagerhaus von 1923. Die Treppe führt 24 Meter hoch auf eine Dachterrasse. Die Restaurierung des Lagerhauses leitete Bureau Polderman. Es ist MADs erster öffentlicher Kulturbau in Europa."}
+};
+
+/* ---------- BAUWERKE ---------- */
+const B=[
+{id:"laurens",n:"Grote of Sint-Laurenskerk",y:"1449–1525",s:1449,e:"e1",a:[],st:"Gotik",bm:"Mittelalterliche Bauhütte, Umbauten bis ins 17. Jh.",lat:51.9215,lon:4.4845,addr:"Grotekerkplein 27",status:"erhalten, Wiederaufbau 1952–1968",
+ t:"Die spätgotische Hallenkirche ist das einzige große mittelalterliche Bauwerk der Innenstadt. 1940 brannte sie aus; nach langer Debatte wurde sie ab 1952 wiederhergestellt, obwohl viele Planer die Ruine lieber abreißen wollten.",
+ w:"Nullpunkt der Stadtgeschichte und Gradmesser des Wiederaufbau-Streits: rekonstruieren oder neu bauen?"},
+{id:"schieland",n:"Schielandshuis",y:"1662–1665",s:1662,e:"e1",a:[],st:"Holländischer Klassizismus",bm:"Jacob Lois, nach Plänen von Pieter Post (Zuschreibung)",lat:51.9205,lon:4.4833,addr:"Korte Hoogstraat 31",status:"erhalten",
+ t:"Das Verwaltungsgebäude des Wasserverbands Schieland von Jacob Lois und Pieter Post (zugeschrieben) ist ein Beispiel des holländischen Klassizismus. Es überstand das Bombardement und steht heute zwischen Hochhäusern.",
+ w:"Der Kontrast zwischen dem kleinen Barockpalais und der Wiederaufbau-City zeigt den Maßstabssprung der Stadt auf einen Blick."},
+{id:"wittehuis",n:"Het Witte Huis",y:"1897–1898",s:1897,e:"e1",a:["molenbroek"],st:"Jugendstil / frühes Hochhaus",lat:51.91885,lon:4.49172,addr:"Wijnhaven 3",status:"erhalten, Rijksmonument",
+ t:"Ein zehngeschossiges Bürohaus mit weiß glasierter Fassade, Ecktürmchen und Mansarddach. Bei der Fertigstellung war es eines der höchsten Bürogebäude Europas.",
+ w:"Früher Import des amerikanischen Hochhausgedankens in eine europäische Hafenstadt. Rotterdam denkt schon um 1900 vertikal."},
+{id:"hotelny",n:"Hotel New York (ehem. Holland-Amerika Lijn)",y:"1901 / 1917",s:1901,e:"e1",a:["muller"],st:"Jugendstil / Historismus",lat:51.9057,lon:4.4827,addr:"Koninginnenhoofd 1",status:"erhalten, seit 1993 Hotel",
+ t:"Das ehemalige Hauptbüro der Holland-Amerika Lijn an der Spitze der Wilhelminapier. Die Doppeltürme mit Kupferhauben markierten den Abfahrtsort der Auswandererschiffe nach New York.",
+ w:"Keimzelle der späteren Kop-van-Zuid-Entwicklung: Das Hafenerbe wird zum Anker der neuen Stadt."},
+{id:"maassilo",n:"Maassilo",y:"1910 (Erweiterungen bis 1930)",s:1910,e:"e1",a:["stok"],st:"Industriebau, Stahlbeton",lat:51.8985,lon:4.4925,addr:"Maashaven Zuidzijde 1",status:"erhalten, Kulturort",
+ t:"Ein Getreidesilo an der Maashaven, einer der frühen großen Stahlbetonbauten der Niederlande. Die glatten, repetitiven Silowände sind reine Ingenieurarchitektur.",
+ w:"Silos wie dieser wurden von der Avantgarde (Le Corbusier, „Vers une architecture“) zum Vorbild der Moderne erklärt. Heute ein Beispiel für Umnutzung von Hafenerbe."},
+
+{id:"stadhuis",n:"Stadhuis Rotterdam",y:"1914–1920",s:1914,e:"e2",a:["evers"],st:"Traditionalismus / Eklektizismus",lat:51.9225,lon:4.4795,addr:"Coolsingel 40",status:"erhalten, Rijksmonument",
+ t:"Der monumentale Rathausbau mit Innenhöfen und 71 Meter hohem Turm verbindet Motive von Renaissance bis Art déco. Er ist eines der wenigen Großbauwerke an der Coolsingel, die 1940 überstanden.",
+ w:"Steht für die akademische Tradition, gegen die sich Oud und die Moderne formierten."},
+{id:"post",n:"Hoofdpostkantoor",y:"1915–1923",s:1915,e:"e2",a:["bremer"],st:"Traditionalismus",lat:51.9234,lon:4.4789,addr:"Coolsingel 42",status:"erhalten, Umbau zu Wohnen/Hotel",
+ t:"Das Hauptpostamt neben dem Rathaus besitzt eine große Stahlbetonhalle hinter schwerer Natursteinfassade. Moderne Konstruktion im traditionellen Kleid.",
+ w:"Zeigt, dass die neue Technik vor der neuen Form da war."},
+{id:"heijplaat",n:"Tuindorp Heijplaat",y:"1914–1918",s:1916,e:"e2",a:["baanders"],st:"Gartenstadt, Werkssiedlung",lat:51.8935,lon:4.4205,addr:"Heijplaat",status:"erhalten, Stadtdenkmal",
+ t:"Werksdorf der Rotterdamsche Droogdok Maatschappij mitten im Hafengebiet. Es besteht aus kleinen Ziegelhäusern mit Satteldächern, Plätzen und eigenen Gemeinschaftsbauten.",
+ w:"Wenig bekannt, aber lehrreich: Die Gartenstadt als Instrument des Industriepaternalismus."},
+{id:"vreewijk",n:"Tuindorp Vreewijk",y:"1913 Plan · ab 1916 gebaut",s:1913,e:"e2",a:["berlage","granpre"],st:"Gartenstadt / Delftse School",lat:51.8915,lon:4.5045,addr:"Vreewijk, Rotterdam-Zuid",status:"erhalten, Stadtdenkmal",
+ t:"Die größte Gartenstadt der Niederlande, gebaut von einer Wohnungsbaugesellschaft für Arbeiter und Mittelstand. Berlage lieferte 1913 den ersten Plan; Granpré Molière, Verhagen und Kok bauten sie mit malerischen Straßen, Grün und handwerklichen Ziegelhäusern.",
+ w:"Die Gegenposition zu Ouds Moderne im selben Jahrzehnt: Gemeinschaft durch Tradition statt durch Standardisierung."},
+{id:"spangen",n:"Wohnblöcke Spangen (J.J.P. Oud)",y:"1918–1920 · Farbe 1921",s:1918,e:"e2",a:["oud","vandoesburg"],st:"De Stijl / früher Funktionalismus",lat:51.9202,lon:4.4462,addr:"Potgieterstraat / Pieter Langendijkstraat",status:"erhalten, verändert",
+ t:"Ouds erste Wohnblöcke als Stadtarchitekt: geschlossene Hofblöcke mit ruhigen, rhythmisierten Fassaden. Van Doesburg entwarf 1921 ein Farbkonzept in Primärfarben für Türen und Fensterrahmen, über das es zum Bruch zwischen beiden kam.",
+ w:"Schlüsselort für die Frage, wie De Stijl in die Architektur übersetzt wird."},
+{id:"justus",n:"Justus-van-Effen-Complex",y:"1919–1922 · Renovierung 2012",s:1919,e:"e2",a:["mbrinkman"],st:"Laubengang-Wohnen",lat:51.9186,lon:4.4430,addr:"Justus van Effenstraat",status:"erhalten, Rijksmonument",
+ t:"Ein Hofblock mit 264 Wohnungen und einer umlaufenden, befahrbaren Galerie im zweiten Obergeschoss, über die die oberen Maisonetten erschlossen werden. Den Hof teilten Gemeinschaftseinrichtungen wie ein Badehaus. 2012 renovierten Molenaar & Co / Hebly Theunissen den Block.",
+ w:"Urform der „Straße in der Luft“, auf die sich die Smithsons (Team 10) beriefen."},
+{id:"wittedorp",n:"Witte Dorp, Oud-Mathenesse",y:"1922–1923 (abgerissen um 1990)",s:1922,e:"e2",a:["oud"],st:"Nieuwe Bouwen, Standardisierung",lat:51.9125,lon:4.4262,addr:"Oud-Mathenesse",status:"verloren",
+ t:"Eine temporäre Siedlung aus rund 340 weißen Häuschen mit roten Dächern in einem dreieckigen Grundriss, gedacht für nur 25 Jahre. Sie stand fast 70 Jahre und wurde dann durch Neubau ersetzt.",
+ w:"Verlorenes Schlüsselwerk: Serienbau, Einfachheit, Gemeinschaftsplatz. Nur noch in Archiv und Literatur erfahrbar."},
+{id:"unie",n:"Café De Unie",y:"1924–1925 · Rekonstruktion 1985–1986",s:1925,e:"e2",a:["oud","weeber"],st:"De Stijl",lat:51.9207,lon:4.4735,addr:"Mauritsweg 34",status:"rekonstruiert an neuem Ort",
+ t:"Ouds Café an der Coolsingel übersetzte die De-Stijl-Malerei in eine Fassade aus farbigen Flächen und Schrift. 1940 zerstört, ließ Carel Weeber es 1986 am Mauritsweg nachbauen.",
+ w:"Das bekannteste gebaute De-Stijl-Bild der Stadt. Zugleich ein Beispiel für den Umgang mit verlorener Moderne durch Rekonstruktion."},
+{id:"kiefhoek",n:"Kiefhoek",y:"1925–1930",s:1925,e:"e2",a:["oud"],st:"Nieuwe Bouwen",lat:51.8952,lon:4.5082,addr:"Hendrik Idoplein (Museumswohnung)",status:"erhalten, Rekonstruktion 1990er",
+ t:"Siedlung aus Minimal-Reihenhäusern für kinderreiche Arbeiterfamilien, mit weißen Putzfassaden, Fensterbändern, gelben Türen und runden Ladenecken. Die Museumswohnung am Hendrik Idoplein zeigt den Originalzustand.",
+ w:"Ouds Hauptwerk des sozialen Funktionalismus: Existenzminimum als Entwurfsaufgabe."},
+{id:"dudokbijenkorf",n:"De Bijenkorf (W.M. Dudok)",y:"1929–1930 (abgerissen 1960)",s:1929,e:"e2",a:["dudok"],st:"Moderne Kubik",lat:51.9212,lon:4.4782,addr:"Coolsingel / Van Oldenbarneveltplaats",status:"verloren",
+ t:"Dudoks Warenhaus mit horizontal geschichteten Baukörpern und einer vielgeschossigen Glaswand. Es überstand 1940 beschädigt, wurde aber 1960 abgerissen.",
+ w:"Verlorenes Hauptwerk der Zwischenkriegsmoderne; sein Abriss wird bis heute als Warnung in Denkmaldebatten zitiert."},
+{id:"vannelle",n:"Van-Nelle-Fabrik",y:"1925–1931",s:1926,e:"e2",a:["bvdv","stam"],st:"Nieuwe Bouwen",lat:51.9232,lon:4.4335,addr:"Van Nelleweg 1",status:"erhalten, UNESCO-Welterbe (2014)",
+ t:"Fabrik für Kaffee, Tee und Tabak aus Betonpilzstützen und durchgehenden Glas-Vorhangfassaden. Diagonale Förderbrücken verbinden Fabrik und Lager, oben sitzt ein runder Teesalon. Licht, Luft und Sauberkeit sind Teil des Programms.",
+ w:"Ikone der internationalen Moderne. Le Corbusier nannte sie „das schönste Schauspiel der Moderne“ (sinngemäß). Führungen am Wochenende."},
+{id:"sonneveld",n:"Huis Sonneveld",y:"1929–1933",s:1929,e:"e2",a:["bvdv"],st:"Nieuwe Bouwen",lat:51.9143,lon:4.4717,addr:"Jongkindstraat 12",status:"erhalten, Museumshaus",
+ t:"Villa für einen Van-Nelle-Direktor mit Stahlskelett, Fensterbändern, Dachterrasse und kompletter Gispen-Einrichtung. Das Farbkonzept ist im Originalzustand erhalten.",
+ w:"Das Nieuwe Bouwen als bürgerlicher Lebensstil; heute Teil des Nieuwe Instituut und von innen zu besichtigen."},
+{id:"bergpolder",n:"Bergpolderflat",y:"1932–1934",s:1932,e:"e2",a:["vantijen","bvdv"],st:"Nieuwe Bouwen, Stahlskelett",lat:51.9335,lon:4.4780,addr:"Borgesiusstraat",status:"erhalten, Rijksmonument",
+ t:"Ein neungeschossiges Wohnhaus für Arbeiter, in Stahlskelett-Bauweise vorgefertigt, erschlossen über Laubengänge und einen gläsernen Treppenturm.",
+ w:"Erstes Galeriehochhaus der Niederlande: Die Vision der „vertikalen Arbeiterwohnung“, Vorläufer vieler Nachkriegsflats."},
+{id:"kuip",n:"Stadion Feijenoord (De Kuip)",y:"1935–1937",s:1935,e:"e2",a:["bvdv","vandenbroek"],st:"Nieuwe Bouwen, Ingenieurbau",lat:51.8939,lon:4.5231,addr:"Van Zandvlietplein 1",status:"erhalten, verändert",
+ t:"Ein Stadion mit zwei frei auskragenden Rängen in sichtbarer Stahlkonstruktion und außenliegenden Treppen, ohne Stützen, die die Sicht verdecken.",
+ w:"Funktionalismus als Massenarchitektur, konstruktiv radikal und seit Jahrzehnten im Gebrauch."},
+{id:"plaslaan",n:"Plaslaanflat",y:"1937–1938",s:1937,e:"e2",a:["vantijen","maaskant"],st:"Nieuwe Bouwen",lat:51.9270,lon:4.5105,addr:"Kralingse Plaslaan 120–200",status:"erhalten, Rijksmonument",
+ t:"Zwei Wohnhochhäuser am Kralingse Plas mit großzügigen Etagenwohnungen, Blick über Park und Wasser.",
+ w:"Die bürgerliche Weiterentwicklung der Bergpolderflat. Das Hochhauswohnen wird mittelständisch."},
+{id:"beurs",n:"Beurs (heute World Trade Center)",y:"1936–1940",s:1936,e:"e2",a:["staal"],st:"Amsterdamse School → sachliche Moderne",lat:51.9194,lon:4.4822,addr:"Beursplein 37",status:"erhalten, 1986 erweitert",
+ t:"Die Börse mit großer Handelshalle und Uhrturm. Staal verlässt hier die expressive Formensprache der Amsterdamse School zugunsten einer kühlen, sachlichen Monumentalität.",
+ w:"Einer der wenigen Bezugspunkte zur Amsterdamse School in Rotterdam und ein Überlebender von 1940."},
+{id:"blijdorp",n:"Diergaarde Blijdorp (Rivièrahal u. a.)",y:"1937–1941",s:1937,e:"e2",a:["ravesteyn"],st:"Barocke Moderne",lat:51.9275,lon:4.4485,addr:"Blijdorplaan 8",status:"erhalten, Rijksmonument",
+ t:"Van Ravesteyn gestaltete den ganzen Tierpark als Gesamtkunstwerk mit geschwungenen Pavillons, Türmen und Ornamenten. Die Rivièrahal ist das Zentrum.",
+ w:"Außenseiter-Position zur Moderne: Kurve und Ornament als bewusste Abkehr vom strengen Funktionalismus."},
+
+{id:"lijnbaan",n:"Lijnbaan",y:"1951–1953",s:1951,e:"e3",a:["vandenbroek","bakema","vantraa"],st:"Wiederaufbau-Moderne",lat:51.9208,lon:4.4769,addr:"Lijnbaan",status:"erhalten, Stadtdenkmal",
+ t:"Eine autofreie Einkaufsstraße aus niedrigen Ladenzeilen mit durchlaufenden Vordächern. Hinter der Zeile liegen Wohnhöfe mit Wohnscheiben (Lijnbaanflats). Das Konzept folgt Van Traas Basisplan.",
+ w:"Eine der ersten geplanten Fußgängerzonen Europas, weltweit kopiert. Architektur als Rahmen für das öffentliche Leben."},
+{id:"groothandel",n:"Groothandelsgebouw",y:"1949–1953",s:1949,e:"e3",a:["maaskant","vantijen"],st:"Wiederaufbau, Großstruktur",lat:51.9235,lon:4.4705,addr:"Stationsplein 45",status:"erhalten, Rijksmonument",
+ t:"Ein riesiges Gebäude für Großhändler mit Innenhöfen, einer Straße, auf der Lastwagen das Gebäude durchfahren, Laderampen und einer Dachterrasse. Es sollte hunderten zerstörten Firmen eine neue Adresse geben.",
+ w:"„Stadt im Gebäude“: Symbol des Wiederaufbauwillens und frühes Beispiel eines Megagebäudes."},
+{id:"industrie",n:"Het Industriegebouw",y:"1948–1952",s:1948,e:"e3",a:["maaskant","vantijen"],st:"Wiederaufbau",lat:51.9240,lon:4.4870,addr:"Goudsesingel",status:"erhalten, Rijksmonument",
+ t:"Ein Gewerbehof für Kleinbetriebe und Werkstätten in einem großen Stahlbetonskelett, erschlossen über Rampen und Aufzüge. Heute ist es ein Ort für Kreativwirtschaft.",
+ w:"Weniger bekannter Zwilling des Groothandelsgebouw. Die Nutzungsflexibilität macht es heute wieder aktuell."},
+{id:"pendrecht",n:"Pendrecht",y:"Plan 1949–1953 · Bau bis ca. 1965",s:1950,e:"e3",a:["stambeese"],st:"Wijkgedachte, Stempel-Städtebau",lat:51.8715,lon:4.4725,addr:"Pendrecht, Rotterdam-Zuid",status:"erhalten, teilweise erneuert",
+ t:"Eine Stadterweiterung aus wiederholten „Stempeln“: Jede Einheit mischt Einfamilienhäuser, Etagenwohnungen und Seniorenwohnungen um einen gemeinsamen Hof. Die Stempel bilden Nachbarschaften mit eigenen Zentren.",
+ w:"Auf der CIAM 1953 international diskutiert und ein Schlüsselbeispiel der Wijkgedachte. Die Planerin wird oft vergessen."},
+{id:"breuerbijenkorf",n:"De Bijenkorf (Marcel Breuer)",y:"1955–1957",s:1955,e:"e3",a:["breuer"],st:"Internationale Moderne",lat:51.9199,lon:4.4787,addr:"Coolsingel 105",status:"erhalten, Rijksmonument",
+ t:"Ein nahezu fensterloses Warenhaus mit Fassade aus sechseckigen Natursteinplatten, der „Honigwabe“, und schmalen Lichtschlitzen. Davor steht Naum Gabos stählerne Skulptur „Constructie“ (1957).",
+ w:"Einer der wichtigsten Nachkriegsbauten eines Bauhaus-Architekten in Europa. Er ersetzt Dudoks Bijenkorf als Stadtzeichen."},
+{id:"cs1957",n:"Centraal Station (Van Ravesteyn)",y:"1950–1957 (abgerissen 2007)",s:1957,e:"e3",a:["ravesteyn"],st:"Wiederaufbau-Moderne",lat:51.9244,lon:4.4682,addr:"Stationsplein",status:"verloren",
+ t:"Der Bahnhof des Wiederaufbaus mit geschwungenem Vordach und großer Leuchtschrift. Er wurde 2007 für den Neubau abgerissen; die Schrift blieb erhalten.",
+ w:"Seine Geschichte zeigt den wechselnden Umgang der Stadt mit dem Erbe des Wiederaufbaus."},
+{id:"euromast",n:"Euromast",y:"1958–1960 · Space Tower 1970",s:1958,e:"e3",a:["maaskant"],st:"Wiederaufbau, Ingenieurbau",lat:51.9054,lon:4.4666,addr:"Parkhaven 20",status:"erhalten, Rijksmonument",
+ t:"Ein Aussichtsturm zur Floriade 1960 mit „Krähennest“-Plattform auf rund 100 Metern. 1970 wurde er um den Space Tower auf 185 Meter erhöht.",
+ w:"Wahrzeichen des Optimismus der Aufbaujahre; von oben liest man den ganzen Stadtgrundriss."},
+
+{id:"kubus",n:"Kubuswoningen und Het Potlood",y:"1978–1984",s:1978,e:"e4",a:["blom"],st:"Strukturalismus",lat:51.9202,lon:4.4906,addr:"Overblaak 70 (Kijk-Kubus)",status:"erhalten",
+ t:"38 auf die Spitze gestellte Würfelhäuser auf sechseckigen Pfeilern bilden einen „Wald“ über einer Fußgängerbrücke. Dazu kommt das bleistiftförmige Wohnhochhaus „Het Potlood“. Die Kijk-Kubus ist als Museum zugänglich.",
+ w:"Das sichtbarste Werk des niederländischen Strukturalismus: Stadt als Dorf, Wohnung als Baum."},
+{id:"peperklip",n:"De Peperklip",y:"1979–1982",s:1979,e:"e4",a:["weeber"],st:"Neorationalismus",lat:51.9020,lon:4.5100,addr:"Rosestraat, Feijenoord",status:"erhalten",
+ t:"Ein durchlaufender, mehrgeschossiger Wohnblock von rund 550 Metern Länge in Form einer Büroklammer, mit farbig gerasterter Fassade aus Betonfertigteilen und großen Innenhöfen.",
+ w:"Streitschrift gegen die kleinteilige Stadterneuerung: Großform, Serie und Anonymität als Qualität."},
+{id:"kruisplein",n:"Wohnungen Kruisplein",y:"1981–1985",s:1983,e:"e4",a:["mecanoo"],st:"Neomoderne",lat:51.9226,lon:4.4717,addr:"Kruisplein",status:"erhalten",
+ t:"Ein Studentenwettbewerb brachte den Auftrag für diesen Wohnblock mit gerundeter Kopfseite, der die Formen des Nieuwe Bouwen neu interpretiert.",
+ w:"Gründungsprojekt von Mecanoo und Beginn der Rückkehr des Wohnens in die City."},
+{id:"willemswerf",n:"Willemswerf",y:"1983–1989",s:1985,e:"e4",a:["quist"],st:"Spätmoderne",lat:51.9153,lon:4.4935,addr:"Boompjes 55",status:"erhalten",
+ t:"Ein weißes Bürohochhaus mit diagonal abgeschnittenem Volumen an den Boompjes, direkt am Fluss.",
+ w:"Auftakt der neuen Rotterdamer Skyline am Wasser, noch bevor die Kop van Zuid begann."},
+
+{id:"kunsthal",n:"Kunsthal",y:"1988–1992",s:1988,e:"e5",a:["oma"],st:"Dekonstruktivismus / Programm-Architektur",lat:51.9108,lon:4.4737,addr:"Westzeedijk 341",status:"erhalten, renoviert 2014",
+ t:"Ein quadratischer Kasten, durchschnitten von einer öffentlichen Rampe und einer Straße. Die Ausstellungsflächen schrauben sich als Rundweg um diesen Schnitt. Die Materialien sind bewusst billig und kontrastierend: Wellplastik, Baumstämme als Stützen, ein orangefarbener Träger.",
+ w:"Manifest der Rotterdamer 1990er: Bewegung und Programm erzeugen die Form."},
+{id:"museumpark",n:"Museumpark",y:"1988–1993",s:1989,e:"e5",a:["oma"],st:"Landschaft / Collage",lat:51.9125,lon:4.4748,addr:"Museumpark",status:"erhalten, verändert",
+ t:"Ein Park aus Zonen mit unterschiedlichen Oberflächen, von Asphalt über Muschelkalk bis zu Obstbäumen, entworfen von OMA mit Yves Brunier. Er verbindet Kunsthal, Nieuwe Instituut, Boijmans und das Depot.",
+ w:"Rotterdams Kulturcluster und Beispiel für Park-Entwurf als Collage."},
+{id:"nai",n:"Het Nieuwe Instituut (ehem. NAi)",y:"1988–1993",s:1990,e:"e5",a:["coenen"],st:"Rationalismus / Collage",lat:51.9146,lon:4.4710,addr:"Museumpark 25",status:"erhalten, Museum und Archiv",
+ t:"Das nationale Architekturinstitut mit einem aufgeständerten Archivriegel über dem Wasser, einer gläsernen Ausstellungshalle und einer langen Pergola.",
+ w:"Hier liegen die Archive von Oud, Brinkman & Van der Vlugt, Bakema, Van Tijen, Maaskant und vielen anderen. Dein wichtigster Ort als Student."},
+{id:"schouwburg",n:"Schouwburgplein",y:"1991–1996",s:1991,e:"e5",a:["west8"],st:"Landschaftsarchitektur",lat:51.9209,lon:4.4727,addr:"Schouwburgplein",status:"erhalten, 2020er umgestaltet",
+ t:"Ein erhöhter, bewusst leerer Platz über einer Tiefgarage mit Holz-, Metall- und Epoxidbelägen. Vier rote, hydraulisch bewegliche Lichtmasten erinnern an Hafenkräne.",
+ w:"Der öffentliche Raum als Bühne. West 8s Beitrag zu Superdutch."},
+{id:"erasmus",n:"Erasmusbrug",y:"1990–1996",s:1990,e:"e5",a:["unstudio"],st:"Ingenieurbau / Infrastruktur als Architektur",lat:51.9090,lon:4.4871,addr:"Erasmusbrug",status:"erhalten",
+ t:"Die Schrägseilbrücke mit geknicktem, 139 Meter hohem Pylon und einer Klappbrücke für Schiffe verbindet das Zentrum mit der Kop van Zuid.",
+ w:"Städtebauliches Symbol des Sprungs über die Maas."},
+{id:"luxor",n:"Nieuwe Luxor Theater",y:"1996–2001",s:1996,e:"e5",a:["bolleswilson"],st:"Expressiver Kontextualismus",lat:51.9063,lon:4.4903,addr:"Posthumalaan 1",status:"erhalten",
+ t:"Ein rot verkleideter Theaterkörper, um den sich die Anlieferungsrampe für Bühnen-Lkw wickelt. Das Foyer richtet sich zum Wasser und zur Erasmusbrug.",
+ w:"Internationale Handschrift an der Kop van Zuid und Infrastruktur als Formgenerator."},
+{id:"kpn",n:"KPN-Toren",y:"1997–2000",s:1997,e:"e5",a:["piano"],st:"High-Tech",lat:51.9076,lon:4.4893,addr:"Wilhelminakade 123",status:"erhalten",
+ t:"Ein Büroturm mit geneigter Glasfassade voller Leuchtpunkte als Medienfassade, gestützt von einer langen, schrägen Stütze.",
+ w:"Früher Medienfassaden-Versuch; Auftakt des „Manhattan an der Maas“."},
+{id:"wpc",n:"World Port Center",y:"1997–2001",s:1998,e:"e5",a:["foster"],st:"High-Tech",lat:51.9043,lon:4.4838,addr:"Wilhelminakade 909",status:"erhalten",
+ t:"Ein Büroturm mit gekrümmtem Grundriss für den Hafenbetrieb an der Spitze der Wilhelminapier.",
+ w:"Der Hafen verlegt seine Verwaltung zurück in die Stadt, als Hochhaus-Zeichen."},
+{id:"montevideo",n:"Montevideo",y:"2001–2005",s:2003,e:"e5",a:["mecanoo"],st:"Collage-Hochhaus",lat:51.9050,lon:4.4847,addr:"Otto Reuchlinweg",status:"erhalten",
+ t:"Ein Wohnhochhaus aus gestapelten Wohntypen mit auskragenden Volumen und Materialwechseln. Es nimmt Bezug auf die Lagerhäuser der Umgebung.",
+ w:"Das Wohnhochhaus als vertikale Nachbarschaft, zwei Jahrzehnte nach Mecanoos Anfang am Kruisplein."},
+{id:"neworleans",n:"New Orleans",y:"2006–2010",s:2006,e:"e5",a:["siza"],st:"Kritischer Regionalismus",lat:51.9061,lon:4.4856,addr:"Otto Reuchlinweg",status:"erhalten",
+ t:"Ein schlanker Wohnturm von rund 158 Metern mit ruhiger Steinfassade auf einem Sockel mit Kino und Kultur.",
+ w:"Zurückhaltung als Haltung im Konzert der expressiven Nachbarn."},
+
+{id:"derotterdam",n:"De Rotterdam",y:"1997 Entwurf · 2009–2013 Bau",s:2013,e:"e6",a:["oma"],st:"Bigness / vertikale Stadt",lat:51.9067,lon:4.4882,addr:"Wilhelminakade 177",status:"erhalten",
+ t:"Drei versetzte, 149 Meter hohe Türme auf einem gemeinsamen Sockel mit Büros, Wohnungen, Hotel und Gastronomie. Mit rund 160.000 Quadratmetern ist es einer der größten Bauten der Niederlande.",
+ w:"Koolhaas' „Bigness“ gebaut: Ein Gebäude wird zur Stadt."},
+{id:"cs2014",n:"Rotterdam Centraal",y:"2004–2014",s:2014,e:"e6",a:["teamcs"],st:"Infrastruktur als Stadtraum",lat:51.9249,lon:4.4694,addr:"Stationsplein",status:"erhalten",
+ t:"Eine keilförmig zur City weisende Halle mit Holzdecke und Edelstahl, dahinter eine große Gleishalle mit Solardach. Die alte Leuchtschrift von 1957 wurde übernommen.",
+ w:"Der Bahnhof als öffentlicher Innenraum und als neues Tor zur Stadt."},
+{id:"markthal",n:"Markthal",y:"2009–2014",s:2014,e:"e6",a:["mvrdv"],st:"Hybrid",lat:51.9200,lon:4.4870,addr:"Dominee Jan Scharpstraat 298",status:"erhalten",
+ t:"Ein Bogen aus 228 Wohnungen überspannt eine Markthalle. Die Innenseite ist mit einem riesigen Kunstwerk (Arno Coenen) bedruckt, die Stirnseiten sind aus Seilnetz-Glas.",
+ w:"Nutzungsmischung als Bauform: Die Nachkriegs-Funktionstrennung wird umgekehrt."},
+{id:"timmerhuis",n:"Timmerhuis",y:"2009–2015",s:2015,e:"e6",a:["oma"],st:"Pixel-Stapelung, Umbau",lat:51.9219,lon:4.4812,addr:"Halvemaansteeg 4",status:"erhalten",
+ t:"Ein gestapelter, pixelartiger Glasbau aus modularen Einheiten auf und neben dem erhaltenen Stadtimmerhaus von 1953. Er enthält Verwaltung, Wohnungen und das Museum Rotterdam.",
+ w:"Weiterbauen am Wiederaufbau-Erbe statt Abriss."},
+{id:"luchtsingel",n:"Luchtsingel",y:"2012–2015",s:2012,e:"e6",a:["zus"],st:"Urbanismus von unten",lat:51.9256,lon:4.4742,addr:"Schiekade / Hofplein",status:"erhalten (temporär gedacht)",
+ t:"Eine 390 Meter lange gelbe Holzbrücke über Straßen und Bahn, die das vernachlässigte Viertel um das Schieblock mit Hofplein und dem Hofbogen-Dachpark verbindet. Finanziert per Crowdfunding.",
+ w:"Planung als Prozess und Beteiligung, eine Antwort auf die Masterpläne von Basisplan bis Kop van Zuid."},
+{id:"depot",n:"Depot Boijmans Van Beuningen",y:"2017–2021",s:2021,e:"e6",a:["mvrdv"],st:"Öffentliches Depot",lat:51.9138,lon:4.4711,addr:"Museumpark 24",status:"erhalten",
+ t:"Ein schüsselförmiger Bau mit Spiegelfassade und Birkenwald auf dem Dach. Innen kreuzen Treppen durch ein Atrium mit Vitrinen; die Depoträume sind nach Klimazonen organisiert und teils öffentlich.",
+ w:"Weltweit erstes öffentlich zugängliches Kunstdepot. Die Spiegelfassade reflektiert den Museumpark."},
+{id:"fenix",n:"Fenix (Lagerhaus 1923 + „Tornado“)",y:"1923 · 2020–2025",s:2025,e:"e6",a:["mad"],st:"Umbau / organische Architektur",lat:51.9018,lon:4.4867,addr:"Paul Nijghkade 5, Katendrecht",status:"erhalten, eröffnet Mai 2025",
+ t:"Ein 172 Meter langes Hafenlagerhaus von 1923 wurde von Bureau Polderman restauriert und zum Museum für Migration. Die „Tornado“ von MAD ist eine doppelte Wendeltreppe aus Holz und poliertem Stahl, die 24 Meter hoch zur Dachterrasse führt.",
+ w:"Umbau des Hafenerbes und Erinnerungsort: Von hier legten Auswanderer ab."}
+];
+
+
+/* ---------- Ergänzungen ---------- */
+EPOCHS.push({id:"e7",n:"★",yr:"heute",t:"Stadtleben & Tipps",c:"--e7",hideHistory:true,p:[],ideas:[]});
+Object.assign(A,{
+groupa:{n:"GROUP A / KeileCollectief",l:"Rotterdamer Büro",r:"Umbau, Transformation",bio:"GROUP A wandelte mit studioADAMS und dem KeileCollectief das Keilepand in M4H um, einen Obst- und Gemüseschuppen von 1922. Von 2016 bis 2021 entstand in mehreren Phasen ein Haus für Werkstätten, Büros, Produktion, Kletterhalle und Gastronomie. Das Projekt steht für die Rotterdamer Strategie, Hafenbauten schrittweise und mit ihren Nutzern umzubauen, statt sie abzureißen."},
+blooming:{n:"Blooming Buildings (Tanja van der Knoop)",l:"Landschaftsarchitektur",r:"Grün im Bestand",bio:"Das Büro entwarf den Maaskant Park (2024) im Innenhof des Groothandelsgebouw. Der Park liegt auf der ehemaligen erhöhten Ladestraße, auf der früher Lastwagen durch das Gebäude fuhren, und umfasst über 500 Pflanzenarten."},
+crimson:{n:"Crimson Architectural Historians / The Urbanists",l:"Rotterdamer Büros",r:"Stadtgeschichte als Entwurf",bio:"Crimson begleitete 2007–2013 die Umwandlung des Hofbogen-Viadukts und verband Denkmalpflege mit neuen Nutzungen unter den Bögen. Den Dachpark Hofbogenpark auf dem zwei Kilometer langen Viadukt entwarfen The Urbanists mit DS landschapsarchitecten und De Dakdokters; der Bau soll Ende 2026 beginnen."}
+});
+B.push(
+{id:"voorhaven",n:"Voorhaven Delfshaven",y:"ab 1389 · Häuser 17.–19. Jh.",s:1389,e:"e1",a:[],bm:"Hafen der Stadt Delft; Kaufmanns- und Speicherhäuser verschiedener Baumeister",st:"Historischer Hafen",lat:51.9086,lon:4.4462,addr:"Voorhaven, Delfshaven",status:"erhalten, Stadtdenkmal",
+ t:"Delft ließ ab 1389 einen Kanal zur Maas graben und legte hier seinen eigenen Hafen an. Um Voorhaven und Achterhaven stehen Giebelhäuser, Speicher, die Pelgrimvaderskerk (von hier brachen 1620 die Pilgerväter auf) und das kleine Zakkendragershuisje. Delfshaven blieb 1940 vom Bombardement verschont.",
+ w:"Das einzige Stück Rotterdam, in dem man die vormoderne Hafenstadt noch im Zusammenhang erlebt. Der Kontrast zur Nachkriegs-City erklärt, was 1940 verloren ging."},
+{id:"hofbogen",n:"Hofbogen-Viadukt & Station Bergweg",y:"1904–1908 · stillgelegt 2010",s:1908,e:"e1",a:["crimson"],st:"Ingenieurbau, Stahlbeton",lat:51.9335,lon:4.4870,addr:"Station Bergweg, Rotterdam",status:"Rijksmonument, Umbau zum Dachpark",
+ t:"Ein fast zwei Kilometer langes Bahnviadukt aus Stahlbeton durch Rotterdam-Noord, gebaut für die Hofpleinlijn, die erste elektrische Bahnstrecke der Niederlande. Station Bergweg liegt auf dem Viadukt; ihre Fassade wurde 2016 restauriert. Seit 2010 fahren keine Züge mehr, die Bögen darunter beherbergen Läden und Werkstätten.",
+ w:"Früher Stahlbeton-Infrastrukturbau und heute Rotterdams „High Line“: Der geplante Hofbogenpark macht das Dach zum längsten Dachpark der Niederlande."},
+{id:"m4h",n:"M4H · Keilepand",y:"1922 · Umbau 2016–2021",s:2019,e:"e6",a:["groupa"],st:"Transformation Hafengebiet",lat:51.9072,lon:4.4285,addr:"Keilestraat 9, Rotterdam",status:"in Transformation",
+ t:"Merwe-Vierhavens (M4H) ist der ehemalige Obsthafen im Westen. Stadt und Hafenbetrieb entwickeln ihn gemeinsam zu einem Makers District für Werkstätten, Produktion, Wohnen und Kultur. Das Keilepand, ein Obst- und Gemüseschuppen von 1922, ist das Vorzeigeprojekt: 14.500 Quadratmeter voller Werkstätten, Büros, Kletterhalle und Gastronomie.",
+ w:"Zeigt die aktuelle Rotterdamer Planungsidee: Umbau im Bestand, Mischung von Arbeit und Wohnen, Entwicklung zusammen mit den Nutzern."},
+{id:"maaskantpark",n:"Maaskant Park",y:"2024",s:2024,e:"e6",a:["blooming","maaskant"],st:"Grün im Denkmal",lat:51.9238,lon:4.4713,addr:"Conradstraat 22, Rotterdam",status:"geöffnet (Apr–Nov 8–20 Uhr)",
+ t:"Ein öffentlicher Garten im Innenhof des Groothandelsgebouw, angelegt auf der früheren erhöhten Lade- und Entladestraße. Mit über 500 Pflanzenarten, Sitzplätzen und Boulebahn. Eröffnet am 18. Mai 2024.",
+ w:"Ein Wiederaufbau-Monument wird ergrünt, ohne seinen Charakter zu verlieren. Gut zu verbinden mit dem Besuch von Groothandelsgebouw und Centraal Station."},
+{id:"upfront",n:"Upfront Foodstore",y:"2026 im ehem. Hartman-Pand",s:2026,e:"e7",a:[],bm:"Umbau des Hartman-Pands, Nieuwe Binnenweg",st:"Stadtleben",lat:51.9142,lon:4.4588,addr:"Mathenesserlaan 190, Rotterdam",status:"geöffnet, täglich 8–22 Uhr",
+ t:"Eine Rotterdamer Supermarkt-Neugründung ohne ultraverarbeitete Lebensmittel. Die erste Filiale öffnete Ende 2025 auf dem Van-Nelle-Gelände, die zweite im Juni 2026 im monumentalen Hartman-Pand mit den blauen Fensterrahmen an der Ecke Nieuwe Binnenweg / Mathenesserlaan. Beim Umbau wurde bewusst auf abgehängte Decken und Linoleum verzichtet.",
+ w:"Kein Architekturdenkmal im engeren Sinn, aber ein Beispiel dafür, wie Rotterdam alte Bauten mit neuen Nutzungen belegt. Gut kombinierbar mit Van Nelle oder einem Spaziergang durch das Nieuwe Westen."},
+{id:"majum",n:"Stichting De Majum",y:"heute",s:2027,e:"e7",a:[],bm:"Kringloopwinkel in Delfshaven",st:"Stadtleben",lat:51.9105,lon:4.4402,addr:"Schoonderloostraat 235, Rotterdam",status:"geöffnet, täglich 11–19 Uhr",
+ t:"Ein nichtkommerzieller Secondhand-Laden auf rund 350 Quadratmetern in Delfshaven, täglich geöffnet. Er versteht sich als Zufluchtsort für „allerlei Außenseiter“ und als Ort, an dem die Zeit stehen geblieben ist.",
+ w:"Stadtleben statt Architektur: gut zu verbinden mit der Voorhaven Delfshaven, die nur wenige Minuten entfernt liegt."}
+);
+
+/* Bildquellen: w = Wikipedia-Artikel (Leitbild), c = Suche auf Wikimedia Commons */
+const IMG={
+laurens:{w:"en:Grote of Sint-Laurenskerk (Rotterdam)",c:"Laurenskerk Rotterdam"},
+schieland:{w:"en:Schielandshuis",c:"Schielandshuis Rotterdam"},
+wittehuis:{w:"en:Witte Huis (Rotterdam)",c:"Witte Huis Rotterdam Wijnhaven"},
+hotelny:{w:"en:Hotel New York, Rotterdam",c:"Hotel New York Rotterdam"},
+maassilo:{w:"nl:Maassilo",c:"Maassilo Rotterdam"},
+voorhaven:{w:"en:Delfshaven",c:"Voorhaven Delfshaven"},
+hofbogen:{w:"nl:Hofpleinlijnviaduct",c:"Station Bergweg Rotterdam Hofbogen"},
+stadhuis:{w:"en:Rotterdam City Hall",c:"Stadhuis Rotterdam Coolsingel"},
+post:{c:"Postkantoor Coolsingel Rotterdam"},
+heijplaat:{w:"en:Heijplaat",c:"Heijplaat tuindorp"},
+vreewijk:{w:"nl:Vreewijk (Rotterdam)",c:"Tuindorp Vreewijk Rotterdam"},
+spangen:{c:"Spangen Oud woningbouw Rotterdam"},
+justus:{w:"nl:Justus van Effencomplex",c:"Justus van Effenblok Spangen"},
+wittedorp:{w:"nl:Witte Dorp (Rotterdam)",c:"Witte Dorp Oud-Mathenesse"},
+unie:{w:"nl:Café De Unie",c:"Café De Unie Rotterdam"},
+kiefhoek:{w:"en:Kiefhoek",c:"Kiefhoek Rotterdam Oud"},
+dudokbijenkorf:{c:"Bijenkorf Dudok Rotterdam"},
+vannelle:{w:"en:Van Nelle Factory",c:"Van Nelle Fabriek"},
+sonneveld:{w:"en:Sonneveld House",c:"Huis Sonneveld Rotterdam"},
+bergpolder:{w:"en:Bergpolderflat",c:"Bergpolderflat Rotterdam"},
+kuip:{w:"en:De Kuip",c:"De Kuip stadion Feijenoord"},
+plaslaan:{w:"nl:Plaslaanflat",c:"Plaslaanflat Kralingen"},
+beurs:{c:"Beursgebouw Rotterdam Staal"},
+blijdorp:{c:"Rivièrahal Blijdorp"},
+lijnbaan:{w:"en:Lijnbaan",c:"Lijnbaan Rotterdam"},
+groothandel:{w:"en:Groothandelsgebouw",c:"Groothandelsgebouw Rotterdam"},
+industrie:{w:"nl:Het Industriegebouw",c:"Industriegebouw Goudsesingel Rotterdam"},
+pendrecht:{w:"en:Pendrecht",c:"Pendrecht Rotterdam"},
+breuerbijenkorf:{c:"De Bijenkorf Rotterdam Breuer Gabo"},
+cs1957:{c:"Rotterdam Centraal Station 1957 Van Ravesteyn"},
+euromast:{w:"en:Euromast",c:"Euromast Rotterdam"},
+kubus:{w:"en:Cube houses",c:"Kubuswoningen Rotterdam"},
+peperklip:{w:"nl:Peperklip",c:"Peperklip Rotterdam"},
+kruisplein:{c:"Kruisplein Rotterdam woningen Mecanoo"},
+willemswerf:{w:"en:Willemswerf",c:"Willemswerf Rotterdam"},
+kunsthal:{w:"en:Kunsthal",c:"Kunsthal Rotterdam"},
+museumpark:{w:"en:Museumpark (Rotterdam)",c:"Museumpark Rotterdam"},
+nai:{w:"en:Het Nieuwe Instituut",c:"Nederlands Architectuurinstituut gebouw Rotterdam"},
+schouwburg:{w:"nl:Schouwburgplein (Rotterdam)",c:"Schouwburgplein Rotterdam"},
+erasmus:{w:"en:Erasmusbrug",c:"Erasmusbrug Rotterdam"},
+luxor:{w:"en:Nieuwe Luxor Theater",c:"Nieuwe Luxor Theater Rotterdam"},
+kpn:{w:"en:KPN Tower (Rotterdam)",c:"KPN toren Rotterdam"},
+wpc:{w:"en:World Port Center",c:"World Port Center Rotterdam"},
+montevideo:{w:"en:Montevideo (Rotterdam)",c:"Montevideo Rotterdam Wilhelminapier"},
+neworleans:{w:"en:New Orleans (building)",c:"New Orleans toren Rotterdam"},
+derotterdam:{w:"en:De Rotterdam",c:"De Rotterdam OMA"},
+cs2014:{w:"en:Rotterdam Centraal station",c:"Rotterdam Centraal station"},
+markthal:{w:"en:Markthal",c:"Markthal Rotterdam"},
+timmerhuis:{w:"en:Timmerhuis",c:"Timmerhuis Rotterdam"},
+luchtsingel:{w:"en:Luchtsingel",c:"Luchtsingel Rotterdam"},
+depot:{w:"en:Depot Boijmans Van Beuningen",c:"Depot Boijmans Van Beuningen"},
+fenix:{w:"en:Fenix (museum)",c:"Fenix Rotterdam Katendrecht"},
+m4h:{w:"nl:Merwe-Vierhavens",c:"Keilepand Rotterdam"},
+maaskantpark:{c:"Maaskant Park Groothandelsgebouw",fb:"groothandel"},
+upfront:{c:"Nieuwe Binnenweg Mathenesserlaan Rotterdam"},
+majum:{c:"Schoonderloostraat Rotterdam"}
+};
+/* genauere Adressen für Google-Maps-Links */
+const ADDR={laurens:"Laurenskerk, Grotekerkplein 27, Rotterdam",schieland:"Schielandshuis, Korte Hoogstraat 31, Rotterdam",wittehuis:"Witte Huis, Wijnhaven 3, Rotterdam",hotelny:"Hotel New York, Koninginnenhoofd 1, Rotterdam",maassilo:"Maassilo, Maashaven Zuidzijde 1, Rotterdam",voorhaven:"Voorhaven, Rotterdam",stadhuis:"Stadhuis, Coolsingel 40, Rotterdam",post:"Coolsingel 42, Rotterdam",heijplaat:"Heijplaat, Rotterdam",vreewijk:"Vreewijk, Rotterdam",spangen:"Potgieterstraat, Rotterdam",justus:"Justus van Effenstraat, Rotterdam",wittedorp:"Oud-Mathenesse, Rotterdam",unie:"Café De Unie, Mauritsweg 34, Rotterdam",kiefhoek:"Hendrik Idoplein 2, Rotterdam",dudokbijenkorf:"Van Oldenbarneveltplaats, Rotterdam",vannelle:"Van Nelle Fabriek, Van Nelleweg 1, Rotterdam",sonneveld:"Huis Sonneveld, Jongkindstraat 12, Rotterdam",bergpolder:"Bergpolderflat, Borgesiusstraat, Rotterdam",kuip:"De Kuip, Van Zandvlietplein 1, Rotterdam",plaslaan:"Kralingse Plaslaan 120, Rotterdam",beurs:"World Trade Center, Beursplein 37, Rotterdam",blijdorp:"Diergaarde Blijdorp, Blijdorplaan 8, Rotterdam",lijnbaan:"Lijnbaan, Rotterdam",groothandel:"Groot Handelsgebouw, Stationsplein 45, Rotterdam",industrie:"Het Industriegebouw, Goudsesingel 64, Rotterdam",pendrecht:"Pendrecht, Rotterdam",breuerbijenkorf:"De Bijenkorf, Coolsingel 105, Rotterdam",cs1957:"Rotterdam Centraal",euromast:"Euromast, Parkhaven 20, Rotterdam",kubus:"Kubuswoningen, Overblaak 70, Rotterdam",peperklip:"De Peperklip, Rosestraat, Rotterdam",kruisplein:"Kruisplein, Rotterdam",willemswerf:"Willemswerf, Boompjes 55, Rotterdam",kunsthal:"Kunsthal, Westzeedijk 341, Rotterdam",museumpark:"Museumpark, Rotterdam",nai:"Het Nieuwe Instituut, Museumpark 25, Rotterdam",schouwburg:"Schouwburgplein, Rotterdam",erasmus:"Erasmusbrug, Rotterdam",luxor:"Nieuwe Luxor Theater, Posthumalaan 1, Rotterdam",kpn:"KPN Toren, Wilhelminakade 123, Rotterdam",wpc:"World Port Center, Wilhelminakade 909, Rotterdam",montevideo:"Montevideo, Otto Reuchlinweg, Rotterdam",neworleans:"New Orleans, Otto Reuchlinweg 1, Rotterdam",derotterdam:"De Rotterdam, Wilhelminakade 177, Rotterdam",cs2014:"Rotterdam Centraal",markthal:"Markthal, Dominee Jan Scharpstraat 298, Rotterdam",timmerhuis:"Timmerhuis, Halvemaansteeg 4, Rotterdam",luchtsingel:"Luchtsingel, Rotterdam",depot:"Depot Boijmans Van Beuningen, Museumpark 24, Rotterdam",fenix:"Fenix, Paul Nijghkade 5, Rotterdam",m4h:"Keilestraat 9, Rotterdam",maaskantpark:"Maaskant Park, Conradstraat 22, Rotterdam",hofbogen:"Station Bergweg, Rotterdam",upfront:"Mathenesserlaan 190, Rotterdam",majum:"Schoonderloostraat 235, Rotterdam"};
+
+</script>
+<script>
+B.sort((a,b)=>a.s-b.s);
+const BI=Object.fromEntries(B.map(b=>[b.id,b]));
+const EI=Object.fromEntries(EPOCHS.map(e=>[e.id,e]));
+const ecol=id=>`var(${EI[id].c})`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const initials=n=>n.replace(/\(.*?\)/g,"").split(/[\s/&.]+/).filter(w=>/^[A-ZÁÉ]/.test(w)).slice(0,2).map(w=>w[0]).join("")||n[0];
+const ICON={
+ route:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+ map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>',
+ photo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-8 7"/></svg>',
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+ x:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+ locate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+ layers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
+ fit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
+};
+const gq=b=>encodeURIComponent(ADDR[b.id]||b.n+", Rotterdam");
+const gmaps=b=>`https://www.google.com/maps/search/?api=1&query=${gq(b)}`;
+const groute=b=>`https://www.google.com/maps/dir/?api=1&destination=${gq(b)}&travelmode=walking`;
+const commonsSearch=b=>`https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent((IMG[b.id]&&IMG[b.id].c)||b.n+" Rotterdam")}&title=Special:MediaSearch&type=image`;
+
+/* ---------- Fotos aus Wikipedia / Wikimedia Commons ---------- */
+let IC={};try{IC=JSON.parse(localStorage.getItem("rta-img-v4")||"{}")}catch(e){}
+const saveIC=()=>{try{localStorage.setItem("rta-img-v4",JSON.stringify(IC))}catch(e){}};
+const W=960; /* Standard-Vorschaugröße von Wikimedia; freie Größen werden oft gedrosselt */
+let active=0;const queue=[];
+function lim(fn){return new Promise((res,rej)=>{const run=()=>{active++;fn().then(res,rej).finally(()=>{active--;const n=queue.shift();n&&n();});};active<4?run():queue.push(run);});}
+const getJSON=u=>lim(async()=>{for(let i=0;i<3;i++){const r=await fetch(u);if(r.status===429){await new Promise(z=>setTimeout(z,800*(i+1)));continue;}if(!r.ok)throw 0;return r.json();}throw 0;});
+function fileInfo(src){const m=src.match(/upload\.wikimedia\.org\/wikipedia\/([a-z]+)\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/]+)/);if(!m)return null;
+  const host=m[1]==="commons"?"commons.wikimedia.org":m[1]+".wikipedia.org";return `https://${host}/wiki/File:${m[2]}`;}
+function toThumb(src,width){if(/\/thumb\//.test(src))return src.replace(/\/\d+px-/,`/${width}px-`);
+  const m=src.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/[a-z]+\/)([0-9a-f]\/[0-9a-f]{2}\/)([^/]+)$/);return m?`${m[1]}thumb/${m[2]}${m[3]}/${width}px-${m[3]}`:src;}
+const okExt=u=>/\.(jpe?g|png|webp)(\/|$)/i.test(u.split("?")[0].replace(/\/\d+px-[^/]+$/,""))||/\.(jpe?g|png|webp)$/i.test(u);
+async function fromWiki(spec){const [lang,...t]=spec.split(":");const title=t.join(":").replace(/ /g,"_");
+  const j=await getJSON(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+  if(j.type==="disambiguation")throw 0;const o=j.originalimage;if(!o||!okExt(o.source))throw 0;
+  const src=o.width<=W?o.source:toThumb(o.source,W);
+  return [{src,page:fileInfo(o.source)||j.content_urls?.desktop?.page,cr:"Wikipedia/Wikimedia"}];}
+async function fromCommons(q){const j=await getJSON(`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=5&gsrsearch=${encodeURIComponent(q+" filetype:bitmap")}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=${W}`);
+  const ps=Object.values(j.query?.pages||{}).sort((a,b)=>a.index-b.index).filter(p=>p.imageinfo&&/\.(jpe?g|png|webp)$/i.test(p.title));
+  if(!ps.length)throw 0;
+  return ps.map(p=>{const ii=p.imageinfo[0];const artist=(ii.extmetadata?.Artist?.value||"").replace(/<[^>]+>/g,"").trim().slice(0,40);const lic=ii.extmetadata?.LicenseShortName?.value||"";
+    return {src:ii.thumburl||ii.url,page:ii.descriptionurl,cr:[artist,lic].filter(Boolean).join(" · ")||"Wikimedia Commons"};});}
+async function fromWikiSearch(lang,q){const j=await getJSON(`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=3&gsrsearch=${encodeURIComponent(q)}&prop=pageimages&piprop=original`);
+  const ps=Object.values(j.query?.pages||{}).sort((a,b)=>a.index-b.index).filter(p=>p.original&&okExt(p.original.source));if(!ps.length)throw 0;
+  return ps.map(p=>({src:p.original.width<=W?p.original.source:toThumb(p.original.source,W),page:fileInfo(p.original.source)||`https://${lang}.wikipedia.org/wiki/${encodeURIComponent(p.title)}`,cr:"Wikipedia/Wikimedia"}));}
+function sources(id){const s=IMG[id]||{};const b=BI[id],name=b.n.replace(/\(.*?\)/g,"").trim();const t=[];
+  if(s.w)t.push(()=>fromWiki(s.w));if(s.c)t.push(()=>fromCommons(s.c));
+  t.push(()=>fromWikiSearch("nl",name+" Rotterdam"),()=>fromWikiSearch("en",name+" Rotterdam"),()=>fromCommons(name+" Rotterdam"));
+  if(ADDR[id])t.push(()=>fromCommons(ADDR[id].split(",").slice(-2).join(" ").trim()));
+  if(s.fb)t.push(()=>fromWiki((IMG[s.fb]||{}).w||"en:x"));
+  return t;}
+/* liefert nacheinander Kandidaten; ein Bild, das nicht lädt, wird übersprungen */
+function candidates(id){const st={list:IC[id]?[IC[id]]:[],i:0,srcs:sources(id),si:0,seen:new Set()};
+  return async function next(){while(true){
+    while(st.i<st.list.length){const c=st.list[st.i++];if(!st.seen.has(c.src)){st.seen.add(c.src);return c;}}
+    if(st.si>=st.srcs.length)return null;try{st.list.push(...await st.srcs[st.si++]());}catch(e){}}};}
+function ph(id,cls="",credit=false){return `<div class="ph ${cls}" data-img="${id}" ${credit?'data-credit="1"':''}><img alt="${esc(BI[id].n)}" decoding="async"><div class="ini">${esc(initials(BI[id].n))}</div></div>`;}
+function hydrate(root=document){
+  root.querySelectorAll(".ph[data-img]:not([data-done])").forEach(el=>{el.dataset.done=1;const id=el.dataset.img;const next=candidates(id);const img=el.querySelector("img");
+    const tryNext=async()=>{const c=await next();if(!c){if(IC[id]){delete IC[id];saveIC();}return;}
+      img.onload=()=>{img.classList.add("ok");IC[id]=c;saveIC();
+        if(el.dataset.credit&&c.page&&!el.querySelector(".credit")){const a=document.createElement("a");a.className="credit";a.href=c.page;a.target="_blank";a.rel="noopener";a.textContent="Foto: "+c.cr;el.appendChild(a);}};
+      img.onerror=()=>tryNext();img.src=c.src;};
+    const io=("IntersectionObserver" in window)?new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();tryNext();}},{rootMargin:"400px"}):null;
+    if(io)io.observe(el);else tryNext();});}
+
+/* ---------- Bausteine ---------- */
+const archNames=b=>b.a.length?b.a.map(a=>A[a].n).join(", "):(b.bm||"");
+function pcard(b,withText){return `<a class="pc" href="#b-${b.id}"><div style="position:relative">${ph(b.id)}<span class="yr">${b.s>2026?"heute":b.s}</span></div>
+ <div class="bd"><h3>${esc(b.n)}</h3><div class="m"><span class="dot" style="background:${ecol(b.e)}"></span>${esc(b.st)}</div>${withText?`<div class="m">${esc(archNames(b))}</div><p>${esc(b.w)}</p>`:""}</div></a>`;}
+
+/* ---------- Entdecken ---------- */
+function pageEntdecken(){
+  const eps=EPOCHS.filter(e=>!e.hideHistory);
+  const heroB=BI.erasmus;
+  const pick={e1:"voorhaven",e2:"vannelle",e3:"lijnbaan",e4:"kubus",e5:"kunsthal",e6:"markthal",e7:"upfront"};
+  return `<div class="hero">${ph(heroB.id)}<div class="ov"><span class="eyebrow" style="color:#fff;opacity:.85">Studienatlas · Architekturgeschichte</span><h1>Rotterdam,<br>gebaute Ideen</h1>
+  <p>Hafen, Bombardement, Wiederaufbau und Superdutch: Rotterdam versteht sich seit hundert Jahren als Labor der Moderne. Sechs Epochen, ${B.length} Orte, ${Object.keys(A).length} Architekten.</p>
+  <div class="stats"><span>${B.length} Orte</span><span>6 Epochen</span><span>${Object.keys(A).length} Architekten</span></div></div></div>
+  <div class="sec-h"><h2>Epochen</h2><a href="#karte">Alle auf der Karte</a></div>
+  <div class="ecards">${eps.map(e=>`<a class="ecard" href="#e-${e.id}">${ph(pick[e.id])}<div class="ov"><span class="n" style="color:#fff">${e.n} · ${e.yr}</span><h3>${e.t}</h3></div></a>`).join("")}</div>
+  <div class="sec-h"><h2>Deine Must-sees</h2><a href="#bauwerke">Alle Bauwerke</a></div>
+  <div class="hs">${["derotterdam","kunsthal","markthal","depot","nai","timmerhuis","vannelle","cs2014","fenix","m4h","voorhaven","hofbogen","maaskantpark"].map(id=>pcard(BI[id])).join("")}</div>
+  ${eps.map(e=>{const bs=B.filter(b=>b.e===e.id);return `<article class="epoch" id="e-${e.id}"><div class="hd"><div class="num" style="background:var(${e.c})">${e.n}</div><div><h2>${e.t}</h2><div class="yr">${e.yr} · ${bs.length} Orte</div></div></div>
+   ${e.p.map(x=>`<p>${x}</p>`).join("")}
+   <div class="ideas">${e.ideas.map(([h,t])=>`<div class="idea"><b>${h}</b><span>${t}</span></div>`).join("")}</div>
+   <div class="sec-h" style="margin-top:6px"><h2 style="font-size:17px">Bauwerke dieser Epoche</h2><a href="#karte" data-filter="${e.id}">Auf der Karte</a></div>
+   <div class="hs">${bs.map(b=>pcard(b)).join("")}</div>
+   <div class="eyebrow" style="margin:6px 0 8px">Architekten</div>
+   <div class="chips">${[...new Set(bs.flatMap(b=>b.a))].map(a=>`<a class="chip" href="#a-${a}">${esc(A[a].n)}</a>`).join("")}</div></article>`;}).join("")}
+  <section class="lit"><h2 style="font-size:20px">Quellen und Literatur</h2><ul>
+  <li>Paul Groenendijk, Piet Vollaard: <i>Architectuurgids Rotterdam</i>. Rotterdam: 010 Publishers. Das Standard-Nachschlagewerk.</li>
+  <li>Hans Ibelings: <i>20th Century Architecture in the Netherlands</i>. Rotterdam: NAi Publishers, 1995.</li>
+  <li>Bart Lootsma: <i>SuperDutch</i>. London: Thames &amp; Hudson, 2000.</li>
+  <li>Ed Taverne, Cor Wagenaar, Martien de Vletter: <i>J.J.P. Oud. Poëtisch functionalist</i>. Rotterdam: NAi Uitgevers, 2001.</li>
+  <li>Kenneth Frampton: <i>Modern Architecture. A Critical History</i>. Thames &amp; Hudson.</li>
+  <li>Rem Koolhaas, Bruce Mau: <i>S,M,L,XL</i>. Monacelli, 1995.</li>
+  <li><a href="https://nieuweinstituut.nl" target="_blank" rel="noopener">Het Nieuwe Instituut</a> · <a href="https://monumentenregister.cultureelerfgoed.nl" target="_blank" rel="noopener">Rijksmonumentenregister</a> · <a href="https://whc.unesco.org/en/list/1441/" target="_blank" rel="noopener">UNESCO: Van Nellefabriek</a></li>
+  <li><a href="https://journals.open.tudelft.nl/dash/article/view/5078" target="_blank" rel="noopener">DASH, TU Delft: Justus-van-Effen-Complex</a> · <a href="https://wederopbouwrotterdam.nl" target="_blank" rel="noopener">Wederopbouw Rotterdam</a> · <a href="https://rotterdamwoont.nl" target="_blank" rel="noopener">Rotterdam Woont</a></li>
+  <li><a href="https://www.hofbogen.nl/english-2/" target="_blank" rel="noopener">De Hofbogen</a> · <a href="https://www.rotterdam.nl/hofbogenpark" target="_blank" rel="noopener">Gemeente Rotterdam: Hofbogenpark</a> · <a href="https://m4hrotterdam.nl/over-m4h/" target="_blank" rel="noopener">M4H Rotterdam</a> · <a href="https://groupa.nl/projects/offices-keilepand-m4h-rotterdam-nl/" target="_blank" rel="noopener">GROUP A: Keilepand</a></li>
+  <li><a href="https://architectenweb.nl/nieuws/artikel.aspx?id=58023" target="_blank" rel="noopener">Architectenweb: Maaskant Park</a> · <a href="https://www.archdaily.com/1030145/mad-architects-fenix-museum-of-migration-opens-in-rotterdams-city-harbor" target="_blank" rel="noopener">ArchDaily: Fenix</a> · <a href="https://www.architectuur.org/bouwwerk/408/Cafe_de_Unie.html" target="_blank" rel="noopener">Architectuurgids: Café De Unie</a></li>
+  </ul><p class="note">Fotos werden live aus Wikipedia und Wikimedia Commons geladen; Urheber und Lizenz stehen auf der jeweils verlinkten Dateiseite. Bei einigen Orten findet die automatische Suche ein Foto aus der Umgebung statt des Gebäudes selbst. Daten und Zuschreibungen folgen der Standardliteratur; prüfe Details für Referate an der Primärliteratur.</p></section>`;
+}
+
+/* ---------- Bauwerke ---------- */
+let bFilter="all",bQuery="";
+function pageBauwerke(){
+  return `<label class="search">${ICON.search}<input id="q" type="search" placeholder="Suche nach Gebäude, Architekt, Stil …" autocomplete="off"></label>
+  <div class="chips" id="bchips"><button class="chip" data-e="all" aria-pressed="true">Alle</button>${EPOCHS.map(e=>`<button class="chip" data-e="${e.id}" aria-pressed="false"><span class="dot" style="background:var(${e.c})"></span>${e.id==="e7"?"Stadtleben":e.yr}</button>`).join("")}</div>
+  <div id="blist"></div>`;
+}
+function drawBauwerke(){
+  const q=bQuery.trim().toLowerCase();
+  const match=b=>(bFilter==="all"||b.e===bFilter)&&(!q||[b.n,b.st,b.addr,archNames(b),b.t].join(" ").toLowerCase().includes(q));
+  const html=EPOCHS.map(e=>{const bs=B.filter(b=>b.e===e.id&&match(b));if(!bs.length)return"";
+    return `<div class="ghead"><span class="dot" style="background:var(${e.c});width:12px;height:12px"></span><h2>${e.t}</h2><span class="yr">${e.yr}</span></div><div class="grid">${bs.map(b=>pcard(b,true)).join("")}</div>`;}).join("");
+  const el=document.getElementById("blist");el.innerHTML=html||`<div class="empty">Keine Treffer für „${esc(bQuery)}“.</div>`;hydrate(el);
+  document.querySelectorAll("#bchips .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.e===bFilter));
+}
+
+/* ---------- Architekten ---------- */
+function pageArchitekten(){
+  const first=id=>Math.min(...B.filter(b=>b.a.includes(id)).map(b=>b.s));
+  const ids=Object.keys(A).sort((a,b)=>first(a)-first(b));
+  return `<p class="note" style="margin:6px 0 14px">Chronologisch nach ihrem ersten Rotterdamer Bau. Tippe für Biografie und Werke.</p><div class="alist">${ids.map(id=>arow(id)).join("")}</div>`;
+}
+function arow(id){const a=A[id];const ws=B.filter(b=>b.a.includes(id));const e=ws[0]?ws[0].e:"e5";
+  return `<a class="arow" href="#a-${id}"><div class="av" style="background:${ecol(e)}">${esc(initials(a.n))}</div><div><b>${esc(a.n)}</b><span>${esc(a.r)}</span></div><span class="cnt">${ws.length}</span></a>`;}
+
+/* ---------- Karte ---------- */
+let map,mini,markers={},mFilter=new Set(EPOCHS.map(e=>e.id)),mSel=null,base,sat,satOn=false,meMarker=null;
+function pageKarte(){
+  return `<div class="mapview"><div id="bigmap"></div>
+  <div class="mapchips"><div class="chips" id="mchips">${EPOCHS.map(e=>`<button class="chip" data-e="${e.id}" aria-pressed="true"><span class="dot" style="background:var(${e.c})"></span>${e.id==="e7"?"Stadtleben":e.n+" · "+e.yr}</button>`).join("")}</div></div>
+  <div class="fabs"><button class="fab" id="fLocate" aria-label="Mein Standort">${ICON.locate}</button><button class="fab" id="fSat" aria-label="Satellitenbild" aria-pressed="false">${ICON.layers}</button><button class="fab" id="fFit" aria-label="Alle anzeigen">${ICON.fit}</button></div>
+  <div id="mprev"></div></div>`;
+}
+const dark=()=>getComputedStyle(document.documentElement).colorScheme.includes("dark");
+function pinIcon(b,sel){const c=getComputedStyle(document.documentElement).getPropertyValue(EI[b.e].c).trim();
+  return L.divIcon({className:"",html:`<div class="pin${sel?" sel":""}" style="background:${c}"><i></i></div>`,iconSize:sel?[40,40]:[30,30],iconAnchor:sel?[20,40]:[15,30]});}
+function osmLayer(){return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"osm",attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'});}
+function initMap(){
+  if(typeof L==="undefined"){document.getElementById("bigmap").innerHTML=`<div class="maperr">Die Karte braucht eine Internetverbindung (Leaflet und Kartenkacheln werden online geladen).</div>`;return;}
+  map=L.map("bigmap",{zoomControl:false,attributionControl:true}).setView([51.914,4.475],13);
+  L.control.zoom({position:"bottomleft"}).addTo(map);
+  base=osmLayer().addTo(map);
+  sat=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Luftbild © Esri, Maxar, Earthstar Geographics"});
+  B.forEach(b=>{markers[b.id]=L.marker([b.lat,b.lon],{icon:pinIcon(b,false),title:b.n,keyboard:true}).on("click",()=>selectMap(b.id,false));});
+  syncMarkers();fitAll();
+  map.on("click",()=>selectMap(null));
+  document.getElementById("mchips").addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c)return;const id=c.dataset.e;
+    if(mFilter.size===EPOCHS.length)mFilter=new Set([id]);else if(mFilter.has(id)){mFilter.delete(id);if(!mFilter.size)mFilter=new Set(EPOCHS.map(x=>x.id));}else mFilter.add(id);syncMarkers();});
+  document.getElementById("fSat").onclick=e=>{satOn=!satOn;e.currentTarget.setAttribute("aria-pressed",satOn);if(satOn){map.removeLayer(base);sat.addTo(map);}else{map.removeLayer(sat);base.addTo(map);}};
+  document.getElementById("fFit").onclick=fitAll;
+  document.getElementById("fLocate").onclick=()=>{if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];
+    if(!meMarker)meMarker=L.marker(ll,{icon:L.divIcon({className:"",html:'<div class="me"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:1000}).addTo(map);else meMarker.setLatLng(ll);map.flyTo(ll,16);},
+    ()=>alertBox("Standort nicht verfügbar. Erlaube den Standortzugriff im Browser."),{enableHighAccuracy:true,timeout:10000});};
+}
+function alertBox(t){const p=document.getElementById("mprev");p.innerHTML=`<div class="preview" style="grid-template-columns:1fr;cursor:default"><div class="bd"><p style="margin:0">${esc(t)}</p></div></div>`;setTimeout(()=>{if(p.textContent.includes(t))p.innerHTML="";},3500);}
+function syncMarkers(){B.forEach(b=>{const m=markers[b.id];if(mFilter.has(b.e))m.addTo(map);else m.remove();});
+  document.querySelectorAll("#mchips .chip").forEach(c=>c.setAttribute("aria-pressed",mFilter.has(c.dataset.e)));
+  if(mSel&&!mFilter.has(BI[mSel].e))selectMap(null);}
+function fitAll(){const ll=B.filter(b=>mFilter.has(b.e)).map(b=>[b.lat,b.lon]);if(ll.length)map.fitBounds(ll,{padding:[50,50]});}
+function selectMap(id,fly){
+  if(mSel&&markers[mSel])markers[mSel].setIcon(pinIcon(BI[mSel],false)).setZIndexOffset(0);
+  mSel=id;const p=document.getElementById("mprev");
+  if(!id){p.innerHTML="";return;}
+  const b=BI[id];markers[id].setIcon(pinIcon(b,true)).setZIndexOffset(900);
+  if(fly)map.flyTo([b.lat,b.lon],16,{duration:.8});
+  p.innerHTML=`<div class="preview" data-open="${id}">${ph(id)}<div class="bd"><div class="m">${b.s>2026?"heute":b.y} · <span style="color:${ecol(b.e)};font-weight:700">${esc(b.st)}</span></div><h3>${esc(b.n)}</h3><div class="m">${esc(archNames(b))}</div>
+   <div class="acts"><a class="btn" href="#b-${id}">Details</a><a class="btn sec" href="${groute(b)}" target="_blank" rel="noopener">${ICON.route}Route</a></div></div><button class="x" aria-label="Schließen" data-close>${ICON.x}</button></div>`;
+  hydrate(p);
+}
+
+/* ---------- Detail-Blatt ---------- */
+function openBuilding(id){const b=BI[id];if(!b)return;const e=EI[b.e];
+  const panel=document.getElementById("panel");
+  panel.innerHTML=`<div class="top">${ph(id,"",true)}<div class="grad"></div><button class="close" data-sheetclose aria-label="Zurück">${ICON.back}</button></div>
+  <div class="body"><div class="sub"><span class="badge" style="background:var(${e.c})">${e.id==="e7"?"Stadtleben":"Epoche "+e.n}</span><span class="badge o">${esc(b.y)}</span><span class="badge o">${esc(b.st)}</span></div>
+  <h1>${esc(b.n)}</h1>
+  ${b.a.length?`<div class="arch-links">${b.a.map(arow).join("")}</div>`:`<p class="note">${esc(b.bm||"")}</p>`}
+  <p>${b.t}</p>
+  <div class="why"><b>Warum wichtig</b>${b.w}</div>
+  <dl class="facts"><div><dt>Adresse</dt><dd>${esc(b.addr)}</dd></div><div><dt>Status</dt><dd>${esc(b.status)}</dd></div><div><dt>Epoche</dt><dd><a href="#e-${b.e}">${e.id==="e7"?e.t:e.n+" · "+e.t}</a></dd></div></dl>
+  <div class="minimap" id="minimap"></div>
+  <div class="acts"><a class="btn" href="${groute(b)}" target="_blank" rel="noopener">${ICON.route}Route</a><a class="btn sec" href="#k-${id}">${ICON.map}Auf der Karte</a><a class="btn sec" href="${gmaps(b)}" target="_blank" rel="noopener">Google Maps</a><a class="btn sec" href="${commonsSearch(b)}" target="_blank" rel="noopener">${ICON.photo}Mehr Fotos</a></div>
+  ${nearby(b)}</div>`;
+  showSheet();hydrate(panel);
+  if(typeof L!=="undefined"){if(mini){mini.remove();mini=null;}
+    mini=L.map("minimap",{zoomControl:false,attributionControl:false,scrollWheelZoom:false,dragging:!L.Browser.mobile,tap:false}).setView([b.lat,b.lon],16);
+    osmLayer().addTo(mini);
+    L.marker([b.lat,b.lon],{icon:pinIcon(b,true)}).addTo(mini);
+    mini.on("click",()=>{location.hash="k-"+id;});setTimeout(()=>mini&&mini.invalidateSize(),80);}
+}
+function dist(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+function nearby(b){const n=B.filter(x=>x.id!==b.id).map(x=>[x,dist(b,x)]).sort((p,q)=>p[1]-q[1]).slice(0,6);
+  return `<div class="sec-h" style="margin:8px 0 0"><h2 style="font-size:18px">In der Nähe</h2></div><div class="hs">${n.map(([x,d])=>pcard(x).replace('</h3>',`</h3><div class="m">${d<1?Math.round(d*1000)+" m":d.toFixed(1)+" km"} entfernt</div>`)).join("")}</div>`;}
+function openArchitect(id){const a=A[id];if(!a)return;const ws=B.filter(b=>b.a.includes(id));const e=ws[0]?ws[0].e:"e5";
+  const panel=document.getElementById("panel");
+  panel.innerHTML=`<div style="position:relative"><button class="close" data-sheetclose aria-label="Zurück">${ICON.back}</button></div>
+  <div class="bio-hd"><div class="av" style="background:${ecol(e)}">${esc(initials(a.n))}</div><span class="eyebrow">${esc(a.r)}</span><h1>${esc(a.n)}</h1><span class="note">${esc(a.l)}</span></div>
+  <div class="body" style="margin-top:0;border-radius:0"><p>${a.bio}</p>
+  <div class="sec-h" style="margin:6px 0 0"><h2 style="font-size:18px">Bauten in Rotterdam</h2></div><div class="hs">${ws.map(b=>pcard(b)).join("")}</div>
+  <div class="chips">${[...new Set(ws.map(b=>b.e))].map(x=>`<a class="chip" href="#e-${x}"><span class="dot" style="background:${ecol(x)}"></span>${EI[x].t}</a>`).join("")}</div></div>`;
+  showSheet();hydrate(panel);}
+let lastFocus=null;
+function showSheet(){const s=document.getElementById("sheet");if(s.hidden)lastFocus=document.activeElement;s.hidden=false;document.getElementById("panel").scrollTop=0;document.body.style.overflow="hidden";setTimeout(()=>{const c=s.querySelector("[data-sheetclose]");c&&c.focus({preventScroll:true});},30);}
+function hideSheet(){const s=document.getElementById("sheet");if(s.hidden)return;s.hidden=true;document.body.style.overflow="";if(mini){mini.remove();mini=null;}lastFocus&&lastFocus.focus&&lastFocus.focus({preventScroll:true});}
+
+/* ---------- Router ---------- */
+const PAGES=["entdecken","bauwerke","karte","architekten"],TITLES={entdecken:"Entdecken",bauwerke:"Bauwerke chronologisch",karte:"Karte",architekten:"Architekten"};
+const rendered={};let cur="entdecken";
+function ensure(p){if(rendered[p])return;const el=document.getElementById("p-"+p);
+  el.innerHTML={entdecken:pageEntdecken,bauwerke:pageBauwerke,karte:pageKarte,architekten:pageArchitekten}[p]();rendered[p]=true;
+  if(p==="bauwerke"){drawBauwerke();document.getElementById("q").addEventListener("input",e=>{bQuery=e.target.value;drawBauwerke();});
+    document.getElementById("bchips").addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c)return;bFilter=c.dataset.e;drawBauwerke();});}
+  if(p==="karte")initMap();hydrate(el);}
+function show(p){const changed=cur!==p;cur=p;PAGES.forEach(x=>document.getElementById("p-"+x).hidden=x!==p);
+  document.querySelectorAll(".tabbar a").forEach(a=>{if(a.dataset.p===p)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
+  document.getElementById("subttl").textContent=TITLES[p];if(p==="karte"&&map)setTimeout(()=>map.invalidateSize(),50);return changed;}
+function route(){
+  const h=decodeURIComponent((location.hash||"#entdecken").slice(1));
+  if(h.startsWith("b-")){if(!rendered[cur])ensure(cur),show(cur);openBuilding(h.slice(2));return;}
+  if(h.startsWith("a-")){if(!rendered[cur])ensure(cur),show(cur);openArchitect(h.slice(2));return;}
+  hideSheet();
+  if(h.startsWith("k-")){ensure("karte");show("karte");window.scrollTo(0,0);if(map){const id=h.slice(2);if(BI[id]&&!mFilter.has(BI[id].e)){mFilter.add(BI[id].e);syncMarkers();}setTimeout(()=>{map.invalidateSize();selectMap(id,true);},60);}return;}
+  if(h.startsWith("e-")){ensure("entdecken");show("entdecken");const el=document.getElementById(h);if(el)el.scrollIntoView({block:"start"});return;}
+  const p=PAGES.includes(h)?h:"entdecken";ensure(p);if(show(p))window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-sheetclose]")){e.preventDefault();location.hash=cur;return;}
+  if(e.target===document.getElementById("sheet")){location.hash=cur;return;}
+  if(e.target.closest("[data-close]")){e.stopPropagation();selectMap(null);return;}
+  const f=e.target.closest("[data-filter]");if(f){mFilter=new Set([f.dataset.filter]);if(map){syncMarkers();setTimeout(fitAll,80);}}
+  const o=e.target.closest(".preview[data-open]");if(o&&!e.target.closest("a,button")){location.hash="b-"+o.dataset.open;}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!document.getElementById("sheet").hidden)location.hash=cur;});
+route();
+if(map&&mFilter.size<EPOCHS.length)fitAll();
+
+</script>
+</body>
+</html>
